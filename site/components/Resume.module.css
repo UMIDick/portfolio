@@ -2,33 +2,44 @@
   padding: 88px 0 72px;
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 28px;
 }
 
 .head {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin-bottom: 12px;
 }
 
+/* Образование, опыт и языки — три равных блока в одну линию. */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 36px 40px;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: stretch;
+  gap: 14px;
 }
 
 .col {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  padding: 18px 20px 20px;
+  border-radius: var(--radius-lg);
+  background: var(--color-neutral-900);
+  box-shadow: var(--shadow-sm);
 }
 
+/* Название раздела сверху блока: по центру, отделено линией. */
 .label {
-  font-size: 15px;
+  font-size: 17.25px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-neutral-500);
   font-weight: 500;
+  text-align: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-neutral-800);
 }
 
 .item {
@@ -37,25 +48,42 @@
   text-wrap: pretty;
 }
 
+.item + .item {
+  margin-top: 2px;
+}
+
 .sub,
 .muted {
   font-size: 18px;
   color: var(--color-neutral-400);
 }
 
-.tags {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+/* Последняя строка блока прижата к низу — ряд выглядит ровным. */
+.muted {
+  margin-top: auto;
 }
 
-.tag {
-  font-size: 17px;
-  padding: 4px 12px;
-  border-radius: 6px;
-  background: var(--color-neutral-900);
-  color: var(--color-neutral-200);
+.tools {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+/* Блок программ — не карточка, линия под названием ему не нужна. */
+.tools .label {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }

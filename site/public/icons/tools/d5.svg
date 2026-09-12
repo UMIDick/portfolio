@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" role="img" aria-label="D5 Render">
+  <defs>
+    <linearGradient id="d5-bg" x1="320" y1="0" x2="320" y2="640" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#265eff"/>
+      <stop offset="1" stop-color="#b319ff"/>
+    </linearGradient>
+  </defs>
+  <circle cx="320" cy="320" r="320" fill="url(#d5-bg)"/>
+  <path fill="#fff" fill-rule="evenodd" d="M228.9,478.8l-28.9-13.8v-243.4l121.8-61.5,121.8,61.5v149.3l-28.9,15.1-28.9,13.8-128.1,65.2-28.9,13.8h0ZM257.8,256.6v150.6l129.4-65.2v-85.3l-64.1-32.6-65.3,32.6h0Z"/>
+</svg>

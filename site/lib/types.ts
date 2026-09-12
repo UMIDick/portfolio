@@ -17,6 +17,12 @@ export interface Experience {
   company: string;
 }
 
+export interface Tool {
+  name: string;
+  /** Уровень владения, 1–5 — закрашенные точки на карточке. */
+  level: number;
+}
+
 export interface Language {
   name: string;
   level: string;
@@ -33,7 +39,7 @@ export interface Resume {
   tagline: string;
   education: Education;
   experience: Experience[];
-  tools: string[];
+  tools: Tool[];
   /** Примечание под инструментами, например «Знаком с BIM». */
   toolsNote?: string;
   languages: Language[];

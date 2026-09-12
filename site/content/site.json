@@ -14,8 +14,16 @@
       { "role": "Стажёр-архитектор", "company": "GEPARD MCHJ" },
       { "role": "Стажёр-визуализатор интерьеров", "company": "CORNER MCHJ" }
     ],
-    "tools": ["AutoCAD", "Revit", "3DsMax", "Enscape", "Lumion", "D5", "Photoshop", "Illustrator"],
-    "toolsNote": "Знаком с BIM",
+    "tools": [
+      { "name": "AutoCAD", "level": 5 },
+      { "name": "Revit", "level": 4 },
+      { "name": "3DsMax", "level": 4 },
+      { "name": "Enscape", "level": 4 },
+      { "name": "Lumion", "level": 4 },
+      { "name": "D5", "level": 3 },
+      { "name": "Photoshop", "level": 5 },
+      { "name": "Illustrator", "level": 4 }
+    ],
     "languages": [
       { "name": "Русский", "level": "C1" },
       { "name": "Английский", "level": "B1" }
@@ -27,6 +35,6 @@
   },
   "projectsIntro": {
     "heading": "Рабочие чертежи",
-    "lead": "Три проекта, в каждом — обложка и комплект листов формата А3."
+    "lead": "Выполнено в рамках программы университета."
   }
 }

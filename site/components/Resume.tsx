@@ -1,4 +1,5 @@
 import type { Resume as ResumeData } from "@/lib/types";
+import ToolCards from "./ToolCards";
 import styles from "./Resume.module.css";
 
 export default function Resume({ resume }: { resume: ResumeData }) {
@@ -35,18 +36,6 @@ export default function Resume({ resume }: { resume: ResumeData }) {
         </div>
 
         <div className={`${styles.col} rise rise-3`}>
-          <h2 className={styles.label}>Инструменты</h2>
-          <ul className={styles.tags}>
-            {resume.tools.map((t) => (
-              <li key={t} className={styles.tag}>
-                {t}
-              </li>
-            ))}
-          </ul>
-          {resume.toolsNote && <p className={styles.muted}>{resume.toolsNote}</p>}
-        </div>
-
-        <div className={`${styles.col} rise rise-4`}>
           <h2 className={styles.label}>Языки</h2>
           {resume.languages.map((l) => (
             <p key={l.name} className={styles.item}>
@@ -54,6 +43,12 @@ export default function Resume({ resume }: { resume: ResumeData }) {
             </p>
           ))}
         </div>
+      </div>
+
+      <div className={`${styles.tools} rise rise-4`}>
+        <h2 className={styles.label}>Навыки работы в программах</h2>
+        <ToolCards tools={resume.tools} />
+        {resume.toolsNote && <p className={styles.muted}>{resume.toolsNote}</p>}
       </div>
     </section>
   );
