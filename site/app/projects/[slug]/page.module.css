@@ -115,9 +115,12 @@
   flex-direction: column;
   gap: 6px;
   padding: 22px 24px;
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
+  border-radius: 18px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-sheen), var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   text-decoration: none;
   color: var(--color-text);
   transition:
@@ -125,7 +128,9 @@
     transform 0.4s var(--ease-out);
 }
 .neighbour:hover {
-  box-shadow: var(--shadow-md);
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-sheen), var(--glass-shadow-hover);
   transform: translateY(-3px);
   color: var(--color-text);
 }

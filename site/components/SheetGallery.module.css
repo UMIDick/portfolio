@@ -25,9 +25,12 @@
   display: block;
   aspect-ratio: 420 / 297;
   overflow: hidden;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  background: var(--color-surface);
+  border-radius: 14px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-sheen), var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   transition:
     transform 0.5s var(--ease-out),
     box-shadow 0.5s ease;
@@ -73,8 +76,16 @@
   background: transparent;
   color: var(--color-text);
 }
+/* Полноэкранный просмотр: фон страницы за листом размывается, как в iOS. */
 .viewer::backdrop {
-  background: rgba(10, 11, 18, 0.92);
+  background: rgba(10, 11, 18, 0.72);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  backdrop-filter: blur(28px) saturate(140%);
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .viewer::backdrop {
+    background: rgba(10, 11, 18, 0.94);
+  }
 }
 
 .viewerInner {
@@ -84,12 +95,17 @@
   height: 100%;
 }
 
+/* Верхняя панель просмотра — стеклянная полоса над листом. */
 .bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   padding: 16px 20px;
+  border-bottom: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
 }
 
 .barText {
@@ -128,9 +144,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--color-neutral-700);
-  background: var(--color-surface);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
   color: var(--color-neutral-200);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-sheen);
   cursor: pointer;
   border-radius: 999px;
   transition:
@@ -139,8 +158,8 @@
 }
 .iconBtn:hover,
 .nav:hover {
-  background: var(--color-neutral-900);
-  border-color: var(--color-neutral-500);
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
 }
 .iconBtn {
   width: 42px;
