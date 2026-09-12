@@ -28,7 +28,8 @@
 .icon {
   position: relative;
   aspect-ratio: 1;
-  border-radius: 10%;
+  /* Совпадает со скруглением, запечённым в PNG иконки (192/1189). */
+  border-radius: 16.15%;
   overflow: hidden;
   transition:
     transform 0.5s var(--ease-out),

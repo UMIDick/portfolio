@@ -9,6 +9,8 @@
 }
 
 .card {
+  --sheen: color-mix(in srgb, var(--brand) 55%, #05060d);
+  position: relative;
   display: grid;
   grid-template-columns: 48px 1fr;
   grid-template-rows: auto auto;
@@ -16,24 +18,50 @@
   gap: 4px 14px;
   padding: 16px 18px;
   border-radius: 16px;
+  overflow: hidden;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-sheen), var(--glass-shadow);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   transition:
-    box-shadow 0.3s ease,
-    transform 0.3s var(--ease-out),
-    background 0.3s ease,
-    border-color 0.3s ease;
+    box-shadow 0.45s ease,
+    transform 0.45s var(--ease-out),
+    background 0.45s ease,
+    border-color 0.45s ease;
+}
+
+/* Блик, проезжающий по стеклу, — как у блоков резюме. */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: -60% -50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--sheen) 70%, transparent), transparent 72%);
+  opacity: 0;
+  transform: translate3d(-28%, 12%, 0);
+  transition:
+    opacity 0.45s ease,
+    transform 0.9s var(--ease-out);
+  pointer-events: none;
+}
+
+/* Логотип, название и точки — поверх блика. */
+.card > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Под курсором стекло подсвечивается цветом бренда программы. */
 .card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
   background: color-mix(in srgb, var(--brand) 14%, var(--glass-bg-hover));
   border-color: color-mix(in srgb, var(--brand) 45%, var(--glass-border-hover));
   box-shadow: var(--glass-sheen), var(--glass-shadow-hover);
+}
+
+.card:hover::after {
+  opacity: 1;
+  transform: translate3d(22%, -8%, 0);
 }
 
 @supports not (backdrop-filter: blur(1px)) {
@@ -132,5 +160,15 @@
 @media (max-width: 420px) {
   .grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card::after {
+    transition: none;
+  }
+  .card:hover {
+    transform: none;
   }
 }

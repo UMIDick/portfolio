@@ -49,7 +49,8 @@
 .cover {
   position: relative;
   aspect-ratio: 1;
-  border-radius: 10%;
+  /* Совпадает со скруглением, запечённым в PNG обложки проекта. */
+  border-radius: 16.15%;
   overflow: hidden;
   box-shadow: var(--shadow-md);
 }
