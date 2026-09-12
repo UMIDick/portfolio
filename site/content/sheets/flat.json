@@ -1,0 +1,170 @@
+[
+  {
+    "number": 2,
+    "title": "Общие данные",
+    "src": "/projects/flat/sheets/02.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 3,
+    "title": "Обмерный план",
+    "src": "/projects/flat/sheets/03.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 4,
+    "title": "План демонтажа перегородок",
+    "src": "/projects/flat/sheets/04.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 5,
+    "title": "План монтажа перегородок",
+    "src": "/projects/flat/sheets/05.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 6,
+    "title": "Планировочное решение",
+    "src": "/projects/flat/sheets/06.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 7,
+    "title": "План расстановки мебели",
+    "src": "/projects/flat/sheets/07.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 8,
+    "title": "План полов",
+    "src": "/projects/flat/sheets/08.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 9,
+    "title": "План потолков",
+    "src": "/projects/flat/sheets/09.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 10,
+    "title": "План размещения светильников",
+    "src": "/projects/flat/sheets/10.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 11,
+    "title": "Схема выключателей",
+    "src": "/projects/flat/sheets/11.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 12,
+    "title": "План розеток",
+    "src": "/projects/flat/sheets/12.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 13,
+    "title": "План слаботочных сетей",
+    "src": "/projects/flat/sheets/13.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 14,
+    "title": "План тёплых полов",
+    "src": "/projects/flat/sheets/14.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 15,
+    "title": "План водоснабжения и канализации",
+    "src": "/projects/flat/sheets/15.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 16,
+    "title": "Развёртка стен. Гостиная",
+    "src": "/projects/flat/sheets/16.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 17,
+    "title": "Развёртка стен. Спальня",
+    "src": "/projects/flat/sheets/17.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 18,
+    "title": "Развёртка стен. Кухня",
+    "src": "/projects/flat/sheets/18.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 19,
+    "title": "Развёртка стен. Санузел",
+    "src": "/projects/flat/sheets/19.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 20,
+    "title": "Узлы. Потолки",
+    "src": "/projects/flat/sheets/20.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 21,
+    "title": "Узлы. Полы",
+    "src": "/projects/flat/sheets/21.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 22,
+    "title": "Ведомость дверных проёмов",
+    "src": "/projects/flat/sheets/22.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 23,
+    "title": "Ведомость отделки помещений",
+    "src": "/projects/flat/sheets/23.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 24,
+    "title": "Спецификация светильников",
+    "src": "/projects/flat/sheets/24.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 25,
+    "title": "Экспликация помещений",
+    "src": "/projects/flat/sheets/25.svg",
+    "width": 1684,
+    "height": 1191
+  }
+]

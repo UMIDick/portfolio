@@ -1,0 +1,125 @@
+.section {
+  padding: 72px 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  text-align: center;
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 28px;
+  padding: 12px 0;
+}
+
+/* Карточка в силуэте иконок проектов: светлая по умолчанию, при наведении инвертируется в тёмную */
+.card {
+  --bg: var(--cover-blue-deep);
+  --ink: var(--cover-blue);
+  display: flex;
+  flex-direction: column;
+  width: min(260px, 100%);
+  aspect-ratio: 1;
+  border-radius: 10%;
+  overflow: hidden;
+  border: 1.5px solid var(--ink);
+  text-decoration: none;
+  background: var(--ink);
+  color: var(--bg);
+  outline-offset: 6px;
+  transition:
+    background 0.35s ease,
+    color 0.35s ease,
+    box-shadow 0.5s ease;
+}
+.card:hover,
+.card:focus-visible {
+  background: var(--bg);
+  color: var(--ink);
+  box-shadow: var(--shadow-lg);
+}
+
+.telegram {
+  --bg: var(--cover-blue-deep);
+  --ink: var(--cover-blue);
+}
+.email {
+  --bg: var(--cover-lilac-deep);
+  --ink: var(--cover-lilac);
+  animation-range: entry 12% entry 57%;
+}
+
+.strip {
+  height: 16.5%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1.5px solid var(--ink);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: clamp(15px, 1.6vw, 20px);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.body {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 16.5%;
+}
+
+/* Логотип Telegram — маска, окрашивается в currentColor */
+.plane {
+  display: block;
+  width: 41.5%;
+  aspect-ratio: 522 / 432;
+  background: currentColor;
+  -webkit-mask: url("/icons/telegram-plane-tight.png") center / contain no-repeat;
+  mask: url("/icons/telegram-plane-tight.png") center / contain no-repeat;
+  margin-left: -8%;
+  margin-top: 5%;
+}
+
+.envelope {
+  width: 47%;
+  height: auto;
+}
+
+.label {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: 9%;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: clamp(13px, 1.3vw, 17px);
+  letter-spacing: 0.03em;
+}
+
+.copy {
+  margin-top: 24px;
+  font-size: 16px;
+  color: var(--color-neutral-600);
+  text-align: center;
+  animation-range: entry 0% entry 60%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}

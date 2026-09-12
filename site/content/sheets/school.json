@@ -1,0 +1,107 @@
+[
+  {
+    "number": 26,
+    "title": "Общие данные",
+    "src": "/projects/school/sheets/26.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 27,
+    "title": "Генеральный план",
+    "src": "/projects/school/sheets/27.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 28,
+    "title": "План 1-го этажа",
+    "src": "/projects/school/sheets/28.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 29,
+    "title": "План 2-го этажа",
+    "src": "/projects/school/sheets/29.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 30,
+    "title": "План кровли",
+    "src": "/projects/school/sheets/30.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 31,
+    "title": "Фасад 1–7",
+    "src": "/projects/school/sheets/31.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 32,
+    "title": "Фасад 7–1",
+    "src": "/projects/school/sheets/32.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 33,
+    "title": "Фасад А–Д",
+    "src": "/projects/school/sheets/33.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 34,
+    "title": "Разрез 1–1",
+    "src": "/projects/school/sheets/34.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 35,
+    "title": "Разрез 2–2",
+    "src": "/projects/school/sheets/35.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 36,
+    "title": "Схема расположения перемычек",
+    "src": "/projects/school/sheets/36.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 37,
+    "title": "Ведомость заполнения проёмов",
+    "src": "/projects/school/sheets/37.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 38,
+    "title": "Узлы кровли",
+    "src": "/projects/school/sheets/38.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 39,
+    "title": "Узлы цоколя",
+    "src": "/projects/school/sheets/39.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 40,
+    "title": "Экспликация помещений",
+    "src": "/projects/school/sheets/40.svg",
+    "width": 1684,
+    "height": 1191
+  }
+]

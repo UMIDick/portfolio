@@ -1,0 +1,72 @@
+[
+  {
+    "number": 41,
+    "title": "Общие данные",
+    "src": "/projects/tower/sheets/41.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 42,
+    "title": "План 1-го этажа",
+    "src": "/projects/tower/sheets/42.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 43,
+    "title": "План типового этажа",
+    "src": "/projects/tower/sheets/43.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 44,
+    "title": "План технического этажа",
+    "src": "/projects/tower/sheets/44.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 45,
+    "title": "План кровли",
+    "src": "/projects/tower/sheets/45.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 46,
+    "title": "Фасад 1–8",
+    "src": "/projects/tower/sheets/46.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 47,
+    "title": "Фасад А–Г",
+    "src": "/projects/tower/sheets/47.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 48,
+    "title": "Разрез 1–1",
+    "src": "/projects/tower/sheets/48.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 49,
+    "title": "Схема расположения лестниц",
+    "src": "/projects/tower/sheets/49.svg",
+    "width": 1684,
+    "height": 1191
+  },
+  {
+    "number": 50,
+    "title": "Узлы наружных стен",
+    "src": "/projects/tower/sheets/50.svg",
+    "width": 1684,
+    "height": 1191
+  }
+]

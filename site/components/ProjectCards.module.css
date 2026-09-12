@@ -1,0 +1,71 @@
+.section {
+  padding: 72px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 28px;
+}
+
+.card {
+  display: block;
+  text-decoration: none;
+  color: var(--color-text);
+  border-radius: 14px;
+  outline-offset: 6px;
+}
+
+.icon {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 10%;
+  overflow: hidden;
+  transition:
+    transform 0.5s var(--ease-out),
+    box-shadow 0.5s ease,
+    opacity 0.5s ease;
+}
+
+.icon img {
+  object-fit: cover;
+}
+
+.light {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+/* Карточка под курсором приближается, остальные отходят назад */
+.card:hover .icon,
+.card:focus-visible .icon {
+  transform: scale(1.06);
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.6);
+}
+
+.grid:has(.card:hover) .card:not(:hover) .icon,
+.grid:has(.card:focus-visible) .card:not(:focus-visible) .icon {
+  transform: scale(0.94);
+  opacity: 0.75;
+}
+
+.card:hover .light,
+.card:focus-visible .light {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon,
+  .light {
+    transition: none;
+  }
+}

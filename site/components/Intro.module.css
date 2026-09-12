@@ -1,0 +1,76 @@
+.intro {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  --u: max(30px, min(calc((100vw - 48px) / 12.2), calc((100vh - 120px) / 13.2)));
+}
+
+.board {
+  position: relative;
+  width: calc(11 * var(--u) * 1.1 - 0.1 * var(--u));
+  height: calc(12 * var(--u) * 1.1 - 0.1 * var(--u));
+}
+
+.tile {
+  position: absolute;
+  width: var(--u);
+  height: var(--u);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+
+.glyph {
+  height: calc(var(--u) * 0.672);
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+}
+
+/* Каждая метка — маленькая открытая сверху «u»: обводка слева, справа и снизу */
+.mark {
+  width: 74%;
+  height: 62%;
+  justify-self: center;
+  align-self: center;
+  border: solid var(--ink);
+  border-width: 0 calc(var(--u) * 0.026) calc(var(--u) * 0.026);
+  border-radius: 0 0 42% 42%;
+}
+
+.hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: var(--color-neutral-500);
+  font-size: 14px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.hint:hover {
+  color: var(--color-neutral-300);
+}
+
+.hintLine {
+  display: block;
+  width: 1px;
+  height: 28px;
+  background: currentColor;
+  animation: hintDrift 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hintLine {
+    animation: none;
+  }
+}

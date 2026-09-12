@@ -1,0 +1,32 @@
+{
+  "title": "Умид Шамсиддинов — архитектор-проектировщик",
+  "description": "Портфолио младшего архитектора-проектировщика из Ташкента: рабочие чертежи трёх проектов — двухкомнатная квартира, музыкальная школа, дом повышенной этажности.",
+  "year": 2026,
+  "resume": {
+    "name": "Умид Шамсиддинов",
+    "tagline": "Младший архитектор-проектировщик, Ташкент. Рабочие чертежи.",
+    "education": {
+      "degree": "Бакалавр архитектуры и градостроительства",
+      "university": "Kimyo International University",
+      "gpa": "GPA 4.07"
+    },
+    "experience": [
+      { "role": "Стажёр-архитектор", "company": "GEPARD MCHJ" },
+      { "role": "Стажёр-визуализатор интерьеров", "company": "CORNER MCHJ" }
+    ],
+    "tools": ["AutoCAD", "Revit", "3DsMax", "Enscape", "Lumion", "D5", "Photoshop", "Illustrator"],
+    "toolsNote": "Знаком с BIM",
+    "languages": [
+      { "name": "Русский", "level": "C1" },
+      { "name": "Английский", "level": "B1" }
+    ]
+  },
+  "contacts": {
+    "telegram": { "handle": "@su_working", "url": "https://t.me/su_working" },
+    "email": "umidshamsiddinov1404@gmail.com"
+  },
+  "projectsIntro": {
+    "heading": "Рабочие чертежи",
+    "lead": "Три проекта, в каждом — обложка и комплект листов формата А3."
+  }
+}

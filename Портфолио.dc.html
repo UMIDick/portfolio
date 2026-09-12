@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="ds/styles.css">
+<style>
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--color-bg);color:var(--color-text);font-family:"GOST Type A",var(--font-body);font-synthesis:weight}
+#dc-root{--font-body:"GOST Type A",system-ui,sans-serif;--font-heading:"GOST Type A",system-ui,sans-serif}
+#dc-root h1,#dc-root h2,#dc-root h3,#dc-root h6,#dc-root p,#dc-root div,#dc-root span,#dc-root a{font-family:"GOST Type A",system-ui,sans-serif}
+a{color:var(--color-accent)}a:hover{color:var(--color-accent-400)}
+@font-face{font-family:"GOST Type A";src:url("assets/fonts/GOST_A.ttf") format("truetype");font-display:swap}
+@keyframes rise{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:none}}
+@keyframes draw{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes hintDrift{0%,100%{transform:translateY(0);opacity:.45}50%{transform:translateY(6px);opacity:.9}}
+</style>
+</helmet>
+
+<section data-screen-label="Интро" style="position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;--u:max(30px, min(calc((100vw - 48px) / 12.2), calc((100vh - 120px) / 13.2)))">
+  <div style="position:relative;width:calc(11 * var(--u) * 1.1 - 0.1 * var(--u));height:calc(12 * var(--u) * 1.1 - 0.1 * var(--u))">
+    <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="0">
+      <div style="{{ t.style }}">
+        <div style="{{ t.glyphStyle }}">
+          <sc-for list="{{ t.dots }}" as="d" hint-placeholder-count="0">
+            <div style="{{ d.style }}"></div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+  <sc-if value="{{ showHint }}" hint-placeholder-val="{{ true }}">
+    <a href="#resume" style="position:absolute;left:0;right:0;bottom:28px;display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;color:var(--color-neutral-500);font-size:14px;letter-spacing:.16em;text-transform:uppercase">
+      <span>Резюме</span>
+      <span style="display:block;width:1px;height:28px;background:var(--color-neutral-500);animation:hintDrift 2.2s ease-in-out infinite"></span>
+    </a>
+  </sc-if>
+</section>
+
+<main style="max-width:1160px;margin:0 auto;padding:0 32px 64px;display:flex;flex-direction:column">
+
+<section id="resume" data-screen-label="Резюме" style="padding:88px 0 72px;display:flex;flex-direction:column;gap:40px">
+  <div style="display:flex;flex-direction:column;gap:10px;animation:rise .9s cubic-bezier(.2,.8,.2,1) both;animation-timeline:view();animation-range:entry 0% entry 40%">
+    <div style="font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent)">Резюме</div>
+    <h1 style="margin:0;font-size:clamp(42px,6vw,64px);font-weight:500;line-height:1.08;letter-spacing:0">Умид Шамсиддинов</h1>
+    <p style="margin:0;font-size:24px;color:var(--color-neutral-400);text-wrap:pretty">Младший архитектор-проектировщик, Ташкент. Рабочие чертежи.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:36px 40px">
+    <div style="display:flex;flex-direction:column;gap:10px;animation:rise .9s cubic-bezier(.2,.8,.2,1) both;animation-timeline:view();animation-range:entry 0% entry 45%">
+      <h6 style="margin:0;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-neutral-500);font-weight:500">Образование</h6>
+      <p style="margin:0;font-size:21px;line-height:1.45;text-wrap:pretty">Бакалавр архитектуры и градостроительства, Kimyo International University</p>
+      <p style="margin:0;font-size:18px;color:var(--color-neutral-400)">GPA 4.07</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;animation:rise .9s cubic-bezier(.2,.8,.2,1) both;animation-timeline:view();animation-range:entry 8% entry 53%">
+      <h6 style="margin:0;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-neutral-500);font-weight:500">Опыт</h6>
+      <p style="margin:0;font-size:21px;line-height:1.45">Стажёр-архитектор<br><span style="font-size:18px;color:var(--color-neutral-400)">GEPARD MCHJ</span></p>
+      <p style="margin:0;font-size:21px;line-height:1.45">Стажёр-визуализатор интерьеров<br><span style="font-size:18px;color:var(--color-neutral-400)">CORNER MCHJ</span></p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;animation:rise .9s cubic-bezier(.2,.8,.2,1) both;animation-timeline:view();animation-range:entry 16% entry 61%">
+      <h6 style="margin:0;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-neutral-500);font-weight:500">Инструменты</h6>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <span style="font-size:17px;padding:4px 12px;border-radius:6px;background:var(--color-neutral-900);color:var(--color-neutral-200)">AutoCAD</span>
+        <span style="font-size:17px;padding:4px 12px;border-radius:6px;background:var(--color-neutral-900);color:var(--color-neutral-200)">Revit</span>
+        <span style="font-size:17px;padding:4px 12px;border-radius:6px;background:var(--color-neutral-900);color:var(--color-neutral-200)">3DsMax</span>
+        <span style="font-size:17px;padding:4px 12px;border-radius:6px;background:var(--color-neutral-900);color:var(--color-neutral-200)">Enscape</span>
+        <span style="font-size:17px;padding:4px 12px;border-radius:6px;background:var(--color-neutral-900);color:var(--color-neutral-200)">Lumion</span>
+        <span style="font-size:17px;padding:4px 12px;border-radius:6px;background:var(--color-neutral-900);color:var(--color-neutral-200)">D5</span>
+        <span style="font-size:17px;padding:4px 12px;border-radius:6px;background:var(--color-neutral-900);color:var(--color-neutral-200)">Photoshop</span>
+        <span style="font-size:17px;padding:4px 12px;border-radius:6px;background:var(--color-neutral-900);color:var(--color-neutral-200)">Illustrator</span>
+      </div>
+      <p style="margin:0;font-size:18px;color:var(--color-neutral-400)">Знаком с BIM</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;animation:rise .9s cubic-bezier(.2,.8,.2,1) both;animation-timeline:view();animation-range:entry 24% entry 69%">
+      <h6 style="margin:0;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-neutral-500);font-weight:500">Языки</h6>
+      <p style="margin:0;font-size:21px;line-height:1.45">Русский — C1</p>
+      <p style="margin:0;font-size:21px;line-height:1.45">Английский — B1</p>
+    </div>
+  </div>
+</section>
+
+<div style="height:1px;background:linear-gradient(to right,transparent,var(--color-divider) 48px,var(--color-divider) calc(100% - 48px),transparent);transform-origin:left center;animation:draw 1.2s cubic-bezier(.2,.8,.2,1) both;animation-timeline:view();animation-range:entry 0% entry 100%"></div>
+
+<section id="projects" data-screen-label="Проекты" style="padding:72px 0;display:flex;flex-direction:column;gap:36px">
+  <div style="display:flex;flex-direction:column;gap:10px;animation:rise .9s cubic-bezier(.2,.8,.2,1) both;animation-timeline:view();animation-range:entry 0% entry 40%">
+    <div style="font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent)">Проекты</div>
+    <h2 style="margin:0;font-size:clamp(32px,4vw,44px);font-weight:500;line-height:1.12;letter-spacing:0">Рабочие чертежи</h2>
+    <p style="margin:0;font-size:21px;color:var(--color-neutral-400);max-width:56ch;text-wrap:pretty">Три проекта, в каждом — обложка и комплект листов формата А3.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:28px">
+    <a href="#project-1" onMouseEnter="{{ enter1 }}" onMouseLeave="{{ leave1 }}" onFocus="{{ enter1 }}" onBlur="{{ leave1 }}" style="display:flex;flex-direction:column;gap:14px;text-decoration:none;color:var(--color-text);border-radius:14px;outline-offset:6px;animation:rise .9s cubic-bezier(.2,.8,.2,1) both;animation-timeline:view();animation-range:entry 0% entry 45%">
+      <div style="position:relative;aspect-ratio:1;border-radius:10%;overflow:hidden;transition:transform .5s cubic-bezier(.2,.8,.2,1),box-shadow .5s ease" style-hover="transform:translateY(-8px) scale(1.02);box-shadow:var(--shadow-lg)">
+        <img src="assets/icons/flat-dark.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;display:block">
+        <img src="assets/icons/flat-light.png" alt="Двухкомнатная квартира" style="{{ light1 }}">
+      </div>
+    </a>
+    <a href="#project-2" onMouseEnter="{{ enter2 }}" onMouseLeave="{{ leave2 }}" onFocus="{{ enter2 }}" onBlur="{{ leave2 }}" style="display:flex;flex-direction:column;gap:14px;text-decoration:none;color:var(--color-text);border-radius:14px;outline-offset:6px;animation:rise .9s cubic-bezier(.2,.8,.2,1) both;animation-timeline:view();animation-range:entry 10% entry 55%">
+      <div style="position:relative;aspect-ratio:1;border-radius:10%;overflow:hidden;transition:transform .5s cubic-bezier(.2,.8,.2,1),box-shadow .5s ease" style-hover="transform:translateY(-8px) scale(1.02);box-shadow:var(--shadow-lg)">
+        <img src="assets/icons/school-dark.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;display:block">
+        <img src="assets/icons/school-light.png" alt="Музыкальная школа" style="{{ light2 }}">
+      </div>
+    </a>
+    <a href="#project-3" onMouseEnter="{{ enter3 }}" onMouseLeave="{{ leave3 }}" onFocus="{{ enter3 }}" onBlur="{{ leave3 }}" style="display:flex;flex-direction:column;gap:14px;text-decoration:none;color:var(--color-text);border-radius:14px;outline-offset:6px;animation:rise .9s cubic-bezier(.2,.8,.2,1) both;animation-timeline:view();animation-range:entry 20% entry 65%">
+      <div style="position:relative;aspect-ratio:1;border-radius:10%;overflow:hidden;transition:transform .5s cubic-bezier(.2,.8,.2,1),box-shadow .5s ease" style-hover="transform:translateY(-8px) scale(1.02);box-shadow:var(--shadow-lg)">
+        <img src="assets/icons/tower-dark.png" alt="" style="position:absolute;inset:0;width:100%;height:100%;display:block">
+        <img src="assets/icons/tower-light.png" alt="Дом повышенной этажности" style="{{ light3 }}">
+      </div>
+    </a>
+  </div>
+</section>
+
+<div style="height:1px;background:linear-gradient(to right,transparent,var(--color-divider) 48px,var(--color-divider) calc(100% - 48px),transparent);transform-origin:left center;animation:draw 1.2s cubic-bezier(.2,.8,.2,1) both;animation-timeline:view();animation-range:entry 0% entry 100%"></div>
+
+<section id="contacts" data-screen-label="Контакты" style="padding:72px 0 24px;display:flex;flex-direction:column;gap:28px">
+  <div style="display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center;animation:rise .9s cubic-bezier(.2,.8,.2,1) both;animation-timeline:view();animation-range:entry 0% entry 40%">
+    <div style="font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent)">Контакты</div>
+    <h2 style="margin:0;font-size:clamp(32px,4vw,44px);font-weight:500;line-height:1.12;letter-spacing:0">Связаться</h2>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:28px;padding:12px 0">
+    <a href="https://t.me/su_working" target="_blank" rel="noopener" onMouseEnter="{{ enter4 }}" onMouseLeave="{{ leave4 }}" onFocus="{{ enter4 }}" onBlur="{{ leave4 }}" style="{{ card4 }}">
+      <div style="height:16.5%;display:flex;align-items:center;justify-content:center;border-bottom:1.5px solid #7d95bf;background:#1e2a3e;color:#7d95bf;font-family:'GOST Type A',var(--font-body);font-size:clamp(15px,1.6vw,20px);letter-spacing:.06em;text-transform:uppercase;font-weight:400">Telegram</div>
+      <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;padding-bottom:16.5%;box-sizing:border-box">
+        
+        <div style="{{ label4 }}">@su_working</div>
+      <div style="width: 108px; aspect-ratio: 522 / 432; background: currentColor; -webkit-mask: url(assets/icons/telegram-plane-tight.png) center / contain no-repeat; mask: url(assets/icons/telegram-plane-tight.png) center / contain no-repeat; height: 80px; left: 65px; position: absolute; top: 53px"></div></div>
+    </a>
+    <a href="mailto:umidshamsiddinov1404@gmail.com" onMouseEnter="{{ enter5 }}" onMouseLeave="{{ leave5 }}" onFocus="{{ enter5 }}" onBlur="{{ leave5 }}" style="{{ card5 }}">
+      <div style="height:16.5%;display:flex;align-items:center;justify-content:center;border-bottom:1.5px solid #c08aa5;background:#3f2d3b;color:#c08aa5;font-family:'GOST Type A',var(--font-body);font-size:clamp(15px,1.6vw,20px);letter-spacing:.06em;text-transform:uppercase;font-weight:400">Email</div>
+      <div style="flex:1;position:relative;display:flex;align-items:center;justify-content:center;padding-bottom:16.5%;box-sizing:border-box">
+        <svg viewBox="0 0 52 40" width="50%" fill="currentColor" style="width: 122px; height: 89px"><path fill-opacity=".55" d="M12 40H4c-2.2 0-4-1.8-4-4V12l12 9z"></path><path fill-opacity=".55" d="M40 40h8c2.2 0 4-1.8 4-4V12l-12 9z"></path><path fill-opacity=".72" d="M40 21l12-9V6c0-4.5-5.1-7-8.7-4.3L40 4.4z"></path><path fill-opacity=".72" d="M12 21L0 12V6c0-4.5 5.1-7 8.7-4.3L12 4.4z"></path><path d="M12 21l14 10.5L40 21V4.4L26 15 12 4.4z"></path></svg>
+        <div style="{{ label5 }}">umidshamsiddinov1404@gmail.com</div>
+      </div>
+    </a>
+  </div>
+  <p style="margin:24px 0 0;font-size:16px;color:var(--color-neutral-600);text-align:center;animation:rise .9s cubic-bezier(.2,.8,.2,1) both;animation-timeline:view();animation-range:entry 0% entry 60%">© 2026 Умид Шамсиддинов</p>
+</section>
+
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;introSpeed&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1,&quot;min&quot;:0.4,&quot;max&quot;:2.5,&quot;step&quot;:0.1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Интро&quot;},&quot;replayIntro&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Интро&quot;},&quot;showScrollHint&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Интро&quot;}}">
+// Glyphs traced 1:1 from the reference cover — 6 rows, 4 or 5 columns of "u" marks
+const GLYPHS = {
+  P:["1110","1001","1001","1110","1000","1000"],
+  O:["01110","10001","10001","10001","10001","01110"],
+  R:["1110","1001","1110","1001","1001","1001"],
+  T:["11111","00100","00100","00100","00100","00100"],
+  F:["1111","1000","1110","1000","1000","1000"],
+  L:["1000","1000","1000","1000","1000","1111"],
+  I:["11111","00100","00100","00100","00100","11111"],
+  A:["01110","10001","10001","11111","10001","10001"],
+  C:["01110","10001","10000","10000","10001","01110"],
+  H:["10001","10001","10001","11111","10001","10001"],
+  E:["1111","1000","1110","1000","1000","1111"],
+  U:["10001","10001","10001","10001","10001","01110"],
+  M:["10001","10001","11011","10101","10001","10001"],
+  D:["1110","1001","1001","1001","1001","1110"],
+  "2":["1110","0001","0001","0110","1000","1111"],
+  "0":["01110","10001","10001","10001","10001","01110"],
+  "6":["0111","1000","1000","1110","1001","0110"],
+};
+// Tile kinds: cover colours (from the architect's reference). Rounded tiles carry a full
+// stroke; chamfered tiles (ARCHITECTURE, 2026) have two cut corners and a stroke on the
+// top, right and bottom edges only, exactly as on the cover.
+const KINDS = {
+  port:  { bg:"transparent", ink:"#e9e9ed", shape:"round" },
+  arch:  { bg:"#3f2d3b", ink:"#c08aa5", shape:"chamfer" },
+  umid:  { bg:"#3a2f2c", ink:"#b39373", shape:"round" },
+  year:  { bg:"#1e2a3e", ink:"#7d95bf", shape:"chamfer" },
+};
+const CUT = 24;
+const CHAMFER = [
+  `polygon(0 0, ${100-CUT}% 0, 100% ${CUT}%, 100% 100%, ${CUT}% 100%, 0 ${100-CUT}%)`,   // cut top-right + bottom-left
+  `polygon(${CUT}% 0, 100% 0, 100% ${100-CUT}%, ${100-CUT}% 100%, 0 100%, 0 ${CUT}%)`,   // cut top-left + bottom-right
+];
+function tileShape(k, row){
+  if(k.shape==="round") return { background:k.bg, border:`1.5px solid ${k.ink}`, borderRadius:"30%" };
+  const line=`linear-gradient(${k.ink},${k.ink})`;
+  return {
+    clipPath: CHAMFER[row%2],
+    background:`${line} top / 100% 1.5px no-repeat, ${line} right / 1.5px 100% no-repeat, ${line} bottom / 100% 1.5px no-repeat, ${k.bg}`
+  };
+}
+// Grid: cols 0..10, rows 0..11 (PORTFOLIO on row 4, ARCHITECTURE on col 7, 2026 on col 1, UMID on row 9)
+function layout(){
+  const t=[]; let i=0;
+  "PORTFOLIO".split("").forEach((ch,c)=>t.push({ch,c,r:4,k:"port",i:i++}));
+  "ARCHITECTURE".split("").forEach((ch,r)=>{ if(r===4) return; t.push({ch,c:7,r,k:r===9?"umid":"arch",i:i++}); });
+  "2026".split("").forEach((ch,r)=>{ if(r===1) return; t.push({ch,c:1,r:r+3,k:"year",i:i++}); });
+  "MID".split("").forEach((ch,c)=>t.push({ch,c:8+c,r:9,k:"umid",i:i++}));
+  return t;
+}
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    this.base = layout().map(t=>({ ...t,
+      sx:(Math.random()-.5)*140, sy:(Math.random()-.5)*140, sr:(Math.random()-.5)*220 }));
+    this.state = { settled:false, hover:-1 };
+  }
+  componentDidMount(){ this.play(); }
+  componentDidUpdate(prev){ if(prev.replayIntro!==this.props.replayIntro) this.play(); }
+  play(){
+    this.setState({settled:false});
+    clearTimeout(this._t);
+    this._t=setTimeout(()=>this.setState({settled:true}),60);
+  }
+  renderVals(){
+    const speed = Number(this.props.introSpeed ?? 1);
+    const settled = this.state.settled;
+    const tiles = this.base.map(t=>{
+      const k=KINDS[t.k], delay=(t.i*0.055)/speed, dur=1.15/speed;
+      const g=GLYPHS[t.ch], w=g[0].length, dots=[];
+      // each mark is a small open-top "u": stroke on left/right/bottom, rounded bottom
+      const mark={ boxSizing:"border-box", width:"74%", height:"62%", justifySelf:"center", alignSelf:"center",
+        border:`solid ${k.ink}`, borderWidth:"0 calc(var(--u) * 0.026) calc(var(--u) * 0.026)", borderRadius:"0 0 42% 42%" };
+      g.forEach((row,r)=>row.split("").forEach((v,c)=>{ if(v==="1") dots.push({style:{...mark,gridColumn:c+1,gridRow:r+1}}); }));
+      return {
+        dots,
+        glyphStyle:{ width:`calc(var(--u) * 0.112 * ${w})`, height:"calc(var(--u) * 0.672)", display:"grid",
+          gridTemplateColumns:`repeat(${w},1fr)`, gridTemplateRows:"repeat(6,1fr)" },
+        style:{
+          position:"absolute", width:"var(--u)", height:"var(--u)", boxSizing:"border-box",
+          left:`calc(${t.c} * var(--u) * 1.1)`, top:`calc(${t.r} * var(--u) * 1.1)`,
+          display:"flex", alignItems:"center", justifyContent:"center",
+          ...tileShape(k, t.r),
+          opacity: settled?1:0,
+          transform: settled?"translate(0,0) rotate(0deg) scale(1)":`translate(${t.sx}vw, ${t.sy}vh) rotate(${t.sr}deg) scale(.5)`,
+          transition: settled?`transform ${dur}s cubic-bezier(.2,.8,.2,1) ${delay}s, opacity ${dur*.5}s ease ${delay}s`:"none",
+          willChange:"transform"
+        }
+      };
+    });
+    const hov={};
+    [1,2,3].forEach(n=>{
+      hov["enter"+n]=()=>this.setState({hover:n});
+      hov["leave"+n]=()=>this.setState({hover:-1});
+      hov["light"+n]={ position:"absolute", inset:0, width:"100%", height:"100%", display:"block",
+        opacity:this.state.hover===n?1:0, transition:"opacity .35s ease" };
+    });
+    // contact cards: same silhouette as the project icons; hover inverts to the "light" variant
+    const CONTACT={ 4:{ bg:"#1e2a3e", ink:"#7d95bf" }, 5:{ bg:"#3f2d3b", ink:"#c08aa5" } };
+    [4,5].forEach(n=>{
+      const c=CONTACT[n], on=this.state.hover===n;
+      hov["enter"+n]=()=>this.setState({hover:n});
+      hov["leave"+n]=()=>this.setState({hover:-1});
+      hov["card"+n]={ display:"flex", flexDirection:"column", width:"min(260px, 100%)", aspectRatio:"1", boxSizing:"border-box",
+        borderRadius:"10%", overflow:"hidden", border:`1.5px solid ${c.ink}`, textDecoration:"none",
+        background:on?c.bg:c.ink, color:on?c.ink:c.bg, transition:"background .35s ease, color .35s ease, box-shadow .5s ease", outlineOffset:"6px",
+        boxShadow:on?"var(--shadow-lg)":"none",
+        animation:"rise .9s cubic-bezier(.2,.8,.2,1) both", animationTimeline:"view()", animationRange:`entry ${(n-4)*12}% entry ${45+(n-4)*12}%` };
+      // handle / address: same size, same baseline (fixed to the card bottom), visible only on hover
+      hov["label"+n]={ position:"absolute", left:"6%", right:"6%", bottom:"9%", textAlign:"center", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis",
+        fontFamily:"'GOST Type A', var(--font-body)", fontSize:"clamp(13px, 1.3vw, 17px)", letterSpacing:".03em",
+        opacity:1 };
+    });
+    return { tiles, ...hov, showHint: this.props.showScrollHint ?? true };
+  }
+}
+</script>
+</body>
+</html>

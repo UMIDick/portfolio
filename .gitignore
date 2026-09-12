@@ -1,0 +1,18 @@
+# зависимости и сборка
+node_modules/
+.next/
+out/
+build/
+
+# переменные окружения
+.env
+.env*.local
+
+# артефакты Claude Design
+.thumbnail
+
+# системный мусор
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
