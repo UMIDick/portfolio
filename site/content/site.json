@@ -15,14 +15,46 @@
       { "role": "Стажёр-визуализатор интерьеров", "company": "CORNER MCHJ" }
     ],
     "tools": [
-      { "name": "AutoCAD", "level": 5 },
-      { "name": "Revit", "level": 4 },
-      { "name": "3DsMax", "level": 4 },
-      { "name": "Enscape", "level": 4 },
-      { "name": "Lumion", "level": 4 },
-      { "name": "D5", "level": 3 },
-      { "name": "Photoshop", "level": 5 },
-      { "name": "Illustrator", "level": 4 }
+      {
+        "name": "AutoCAD",
+        "level": 4,
+        "description": "Рабочие чертежи: планы, разрезы, фасады и узлы по ГОСТ."
+      },
+      {
+        "name": "Revit",
+        "level": 4,
+        "description": "BIM-модель здания: планы, разрезы и спецификации из единой модели."
+      },
+      {
+        "name": "3DsMax",
+        "level": 3,
+        "description": "Детальные 3D-модели интерьеров и фасадов для визуализаций."
+      },
+      {
+        "name": "Enscape",
+        "level": 3,
+        "description": "Быстрые рендеры и прогулки по модели прямо из Revit."
+      },
+      {
+        "name": "Lumion",
+        "level": 4,
+        "description": "Визуализация экстерьеров: окружение, зелень и свет."
+      },
+      {
+        "name": "Illustrator",
+        "level": 4,
+        "description": "Схемы, пиктограммы и графика для подачи проектов."
+      },
+      {
+        "name": "Photoshop",
+        "level": 3,
+        "description": "Постобработка рендеров, коллажи и подача планов."
+      },
+      {
+        "name": "D5",
+        "level": 3,
+        "description": "Реалистичные рендеры и анимации в реальном времени."
+      }
     ],
     "languages": [
       { "name": "Русский", "level": "C1" },
@@ -30,7 +62,10 @@
     ]
   },
   "contacts": {
-    "telegram": { "handle": "@su_working", "url": "https://t.me/su_working" },
+    "telegram": {
+      "handle": "@su_working",
+      "url": "https://t.me/su_working"
+    },
     "email": "umidshamsiddinov1404@gmail.com"
   },
   "projectsIntro": {

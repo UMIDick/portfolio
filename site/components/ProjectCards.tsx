@@ -13,7 +13,7 @@ interface Props {
 
 export default function ProjectCards({ projects, heading, lead }: Props) {
   return (
-    <section id="projects" className={styles.section} aria-labelledby="projects-title">
+    <section id="projects" className={`${styles.section} page`} aria-labelledby="projects-title">
       <Stagger className={styles.reveal}>
         {/* Шапка: заголовок | Проекты — по центру, «выскакивает» первой, как в резюме. */}
         <div className={styles.head}>

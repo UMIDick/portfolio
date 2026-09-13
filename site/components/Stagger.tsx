@@ -50,12 +50,14 @@ export default function Stagger({
       onScroll();
     }
 
+    // «На экране» — раздел, который пересекает середину окна: так в один момент
+    // виден только один раздел, и кнопки соседних разделов не накладываются.
     const vis = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) el.dataset.visible = "";
         else delete el.dataset.visible;
       },
-      { rootMargin: "-15% 0px -15% 0px" },
+      { rootMargin: "-50% 0px -50% 0px" },
     );
     vis.observe(el);
     return () => {

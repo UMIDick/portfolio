@@ -76,6 +76,24 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Разделы главной — «страницы» на весь экран: содержимое по центру, следующий
+   раздел снизу не выглядывает. На десктопе прокрутка прилипает к началу страницы. */
+.page {
+  min-height: 100vh;
+  min-height: 100svh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  scroll-snap-align: start;
+}
+
+@media (min-width: 900px) and (min-height: 640px) {
+  html {
+    scroll-snap-type: y mandatory;
+  }
+}
+
 body {
   margin: 0;
   background: var(--color-bg);

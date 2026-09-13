@@ -9,28 +9,31 @@
   bottom: 36px;
   z-index: 20;
   text-decoration: none;
+  /* Появляется с задержкой, чтобы кнопка предыдущего раздела успела уйти. */
   transition:
-    opacity 0.5s ease,
-    transform 0.5s var(--ease-out);
+    opacity 0.4s ease 0.25s,
+    transform 0.4s var(--ease-out) 0.25s;
 }
 
-/* Раздел ушёл с экрана — кнопка плавно прячется. */
+/* Раздел ушёл с экрана — кнопка быстро прячется. */
 [data-stagger]:not([data-visible]) .cta {
   opacity: 0;
   transform: translateY(12px);
   pointer-events: none;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
+/* Компактный круг со стрелкой, чтобы не наезжать на карточки. */
 .ctaBody {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 22px 14px 26px;
-  border-radius: 999px;
-  font-size: 18px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
   color: var(--color-neutral-100);
   background: color-mix(in srgb, var(--color-accent) 24%, var(--glass-bg));
   border: 1px solid color-mix(in srgb, var(--color-accent) 60%, var(--glass-border));
@@ -127,8 +130,8 @@
     bottom: 20px;
   }
   .ctaBody {
-    padding: 12px 18px 12px 20px;
-    font-size: 16px;
+    width: 48px;
+    height: 48px;
   }
 }
 

@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import type { Tool } from "@/lib/types";
 import styles from "./ToolCards.module.css";
@@ -40,15 +43,36 @@ function markFor(name: string): Mark {
 }
 
 export default function ToolCards({ tools }: { tools: Tool[] }) {
+  /* Раскрытая карточка (одна за раз) — у которой есть описание. */
+  const [open, setOpen] = useState<string | null>(null);
+
   return (
     <ul className={styles.grid}>
       {tools.map((t, i) => {
         const { mark, color, icon, solid, plate } = markFor(t.name);
+        const expandable = Boolean(t.description);
+        const isOpen = open === t.name;
+        const toggle = () => setOpen(isOpen ? null : t.name);
         return (
           <li
             key={t.name}
-            className={styles.card}
+            className={`${styles.card} ${expandable ? styles.expandable : ""}`}
             style={{ "--brand": color, "--plate": plate, "--i": i } as React.CSSProperties}
+            data-open={isOpen || undefined}
+            role={expandable ? "button" : undefined}
+            tabIndex={expandable ? 0 : undefined}
+            aria-expanded={expandable ? isOpen : undefined}
+            onClick={expandable ? toggle : undefined}
+            onKeyDown={
+              expandable
+                ? (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      toggle();
+                    }
+                  }
+                : undefined
+            }
           >
             {icon ? (
               <span
@@ -61,7 +85,14 @@ export default function ToolCards({ tools }: { tools: Tool[] }) {
                 {mark}
               </span>
             )}
-            <span className={styles.name}>{t.name}</span>
+            <span className={styles.name}>
+              {t.name}
+              {expandable && (
+                <svg className={styles.chevron} viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </span>
             <span className={styles.dots} role="img" aria-label={`уровень ${t.level} из ${LEVELS}`}>
               {Array.from({ length: LEVELS }, (_, d) => (
                 <span
@@ -71,6 +102,13 @@ export default function ToolCards({ tools }: { tools: Tool[] }) {
                 />
               ))}
             </span>
+            {expandable && (
+              <span className={styles.more}>
+                <span className={styles.moreInner}>
+                  <span className={styles.panel}>{t.description}</span>
+                </span>
+              </span>
+            )}
           </li>
         );
       })}

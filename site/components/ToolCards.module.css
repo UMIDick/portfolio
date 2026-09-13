@@ -5,20 +5,20 @@
   padding: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+  align-items: start;
+  gap: 12px;
 }
 
 .card {
   --sheen: color-mix(in srgb, var(--brand) 55%, #05060d);
   position: relative;
   display: grid;
-  grid-template-columns: 48px 1fr;
+  grid-template-columns: 44px 1fr;
   grid-template-rows: auto auto;
   align-items: center;
-  gap: 4px 14px;
-  padding: 16px 18px;
-  border-radius: 16px;
-  overflow: hidden;
+  gap: 3px 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-sheen), var(--glass-shadow);
@@ -31,17 +31,21 @@
     border-color 0.45s ease;
 }
 
-/* Блик, проезжающий по стеклу, — как у блоков резюме. */
+/* Блик, проезжающий по стеклу, — как у блоков резюме. Рисуется фоном внутри
+   карточки (без overflow: hidden, чтобы панель описания могла выйти за край). */
 .card::after {
   content: "";
   position: absolute;
-  inset: -60% -50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--sheen) 70%, transparent), transparent 72%);
+  inset: 0;
+  border-radius: inherit;
+  background-image: radial-gradient(closest-side, color-mix(in srgb, var(--sheen) 70%, transparent), transparent 72%);
+  background-size: 200% 220%;
+  background-position: -30% 115%;
+  background-repeat: no-repeat;
   opacity: 0;
-  transform: translate3d(-28%, 12%, 0);
   transition:
     opacity 0.45s ease,
-    transform 0.9s var(--ease-out);
+    background-position 0.9s var(--ease-out);
   pointer-events: none;
 }
 
@@ -52,7 +56,7 @@
 }
 
 /* Появление (триггер — обёртка Stagger в резюме, ставит data-reveal).
-   1) Когда три блока резюме доехали (--blocks-done), пустые карточки
+   1) После заголовка «Навыки…» (--tools-start) пустые карточки
       «выскакивают» все сразу.
    2) Следом слева направо по одной проявляется содержимое карточки,
       затем точки уровня закрашиваются цветом программы одна за другой. */
@@ -99,11 +103,11 @@
 
 [data-reveal="in"] .card {
   animation: pop 0.7s var(--ease-out) backwards;
-  animation-delay: var(--blocks-done, 0s);
+  animation-delay: var(--tools-start, 0s);
 }
 
 [data-reveal="in"] .card > * {
-  --show: calc(var(--blocks-done, 0s) + 0.5s + var(--i, 0) * 0.22s);
+  --show: calc(var(--tools-start, 0s) + 0.5s + var(--i, 0) * 0.22s);
   animation: fade-up 0.5s var(--ease-out) backwards;
   animation-delay: var(--show);
 }
@@ -123,7 +127,7 @@
 
 .card:hover::after {
   opacity: 1;
-  transform: translate3d(22%, -8%, 0);
+  background-position: 125% -10%;
 }
 
 @supports not (backdrop-filter: blur(1px)) {
@@ -139,8 +143,8 @@
   grid-row: 1 / 3;
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--brand) 12%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 30%, transparent);
@@ -148,8 +152,8 @@
 
 /* Логотип всегда вписывается в плитку, пропорции сохраняются. */
 .logo img {
-  width: 41px;
-  height: 41px;
+  width: 38px;
+  height: 38px;
   object-fit: contain;
 }
 
@@ -161,8 +165,8 @@
 }
 
 .solid img {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
 }
 
 /* Светлая подложка для тёмных логотипов (Lumion). */
@@ -172,8 +176,8 @@
 }
 
 .plated img {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
 }
 
 /* Плитка-заменитель для программ без файла логотипа. */
@@ -187,9 +191,99 @@
 }
 
 .name {
-  font-size: 19px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 17.5px;
   color: var(--color-neutral-200);
   line-height: 1.2;
+}
+
+/* Раскрываемая карточка: курсор-рука, стрелка в заголовке, описание внизу. */
+.expandable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.expandable:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.chevron {
+  flex: none;
+  color: var(--color-neutral-500);
+  transition:
+    transform 0.4s var(--ease-out),
+    color 0.3s ease;
+}
+
+.card[data-open] .chevron {
+  transform: rotate(180deg);
+  color: var(--brand);
+}
+
+/* Описание раскрывается под карточкой в потоке: высота анимируется через
+   grid-template-rows 0fr → 1fr, поэтому нижний ряд плавно съезжает вниз и
+   так же плавно возвращается. Раздел прижат к верху (см. Resume.module.css),
+   так что при раскрытии двигается только то, что ниже панели. */
+.more {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.45s var(--ease-out);
+}
+
+.card[data-open] .more {
+  grid-template-rows: 1fr;
+}
+
+/* Переключение с одной карточки на другую: старая панель складывается только
+   после того, как новая раскрылась, — высота ряда не проседает, и нижний ряд
+   не дёргается туда-обратно. */
+.grid:has(.card[data-open]) .card:not([data-open]) .more {
+  transition-delay: 0.45s;
+}
+
+.moreInner {
+  display: block;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.panel {
+  display: block;
+  margin-top: 8px;
+  padding: 10px 14px 11px;
+  /* Скругление меньше, чем у карточки, — иначе два скругления у нижних углов
+     накладываются и читаются как «лишние» уголки. */
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--brand) 8%, var(--glass-bg));
+  border: 1px solid color-mix(in srgb, var(--brand) 40%, var(--glass-border-hover));
+  font-size: 15.5px;
+  line-height: 1.45;
+  color: var(--color-neutral-300);
+  text-wrap: pretty;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.35s var(--ease-out);
+}
+
+.card[data-open] .panel {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 0.3s ease 0.1s,
+    transform 0.35s var(--ease-out) 0.1s;
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .panel {
+    background: color-mix(in srgb, var(--brand) 8%, var(--color-surface));
+  }
 }
 
 .dots {
@@ -200,8 +294,8 @@
 
 .dot,
 .dotOn {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
 }
 
@@ -226,6 +320,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .more,
+  .panel,
+  .card[data-open] .panel,
+  .chevron {
+    transition: none;
+  }
   [data-reveal="pending"] .card,
   [data-reveal="pending"] .card > * {
     opacity: 1;

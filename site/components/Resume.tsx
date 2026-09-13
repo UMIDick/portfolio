@@ -6,7 +6,7 @@ import styles from "./Resume.module.css";
 
 export default function Resume({ resume }: { resume: ResumeData }) {
   return (
-    <section id="resume" className={styles.section} aria-labelledby="resume-title">
+    <section id="resume" className={`${styles.section} page`} aria-labelledby="resume-title">
       <Stagger className={styles.reveal}>
         {/* Шапка: имя | Резюме — по центру, «выскакивает» первой. */}
         <div className={styles.head}>
@@ -17,9 +17,7 @@ export default function Resume({ resume }: { resume: ResumeData }) {
             <span className={styles.bar} aria-hidden="true" />
             <div className="kicker">Резюме</div>
           </div>
-          <p className="lead" style={{ fontSize: 24 }}>
-            {resume.tagline}
-          </p>
+          <p className="lead">{resume.tagline}</p>
         </div>
 
         <div className={styles.grid}>
@@ -52,10 +50,11 @@ export default function Resume({ resume }: { resume: ResumeData }) {
           </div>
         </div>
 
-        {/* Анимация прокрутки только на заголовке: анимируемая обёртка над
-            стеклянными карточками даёт в Chromium светлые полосы от backdrop-filter. */}
+        {/* Заголовок выскакивает через секунду после трёх блоков, затем карточки.
+            Анимируется только он, не обёртка: анимируемая обёртка над стеклянными
+            карточками даёт в Chromium светлые полосы от backdrop-filter. */}
         <div className={styles.tools}>
-          <h2 className={`${styles.label} rise`}>Навыки работы в программах</h2>
+          <h2 className={`${styles.label} ${styles.toolsLabel}`}>Навыки работы в программах</h2>
           <ToolCards tools={resume.tools} />
           {resume.toolsNote && <p className={styles.muted}>{resume.toolsNote}</p>}
         </div>

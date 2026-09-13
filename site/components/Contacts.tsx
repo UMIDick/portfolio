@@ -4,7 +4,7 @@ import styles from "./Contacts.module.css";
 
 export default function Contacts({ contacts, year, name }: { contacts: ContactsData; year: number; name: string }) {
   return (
-    <section id="contacts" className={styles.section} aria-labelledby="contacts-title">
+    <section id="contacts" className={`${styles.section} page`} aria-labelledby="contacts-title">
       {/* Раздел последний и невысокий — его верх виден ещё с проектов, поэтому
           каскад стартует, когда шапка поднялась в верхнюю треть экрана (или
           страница докручена до конца), а не когда блок лишь выглядывает снизу. */}

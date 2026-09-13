@@ -1,15 +1,13 @@
 .section {
-  padding: 72px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 36px;
+  padding: 40px 0;
 }
 
-/* Общий триггер появления: шапка 0–0.8s → карточки 0.8–5.3s → кнопка «Связь». */
+/* Общий триггер появления: шапка 0–0.8s → карточки 0.8–5.3s → кнопка «Связь».
+   Отступы и структура — как в резюме. */
 .reveal {
   display: flex;
   flex-direction: column;
-  gap: 36px;
+  gap: 22px;
   --head-done: 0.8s;
   --cards-done: 7.3s;
 }
@@ -19,7 +17,16 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 10px;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.head :global(.h2) {
+  font-size: clamp(36px, 4.2vw, 52px);
+}
+
+.head :global(.lead) {
+  font-size: 20px;
 }
 
 /* Заголовок и подпись «Проекты» в одну строку, между ними вертикальная черта. */
@@ -34,7 +41,7 @@
 .bar {
   width: 1px;
   height: 0.75em;
-  font-size: clamp(32px, 4vw, 44px);
+  font-size: clamp(36px, 4.2vw, 52px);
   background: var(--color-neutral-500);
   opacity: 0.7;
 }

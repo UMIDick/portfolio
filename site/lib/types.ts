@@ -21,6 +21,8 @@ export interface Tool {
   name: string;
   /** Уровень владения, 1–5 — закрашенные точки на карточке. */
   level: number;
+  /** Для каких задач используется; если есть — карточка раскрывается по клику. */
+  description?: string;
 }
 
 export interface Language {

@@ -10,15 +10,13 @@ export default async function HomePage() {
   return (
     <>
       <Intro />
-      <main className="container" style={{ paddingBottom: 64 }}>
+      <main className="container">
         <Resume resume={site.resume} />
-        <div className="divider" />
         <ProjectCards
           projects={projects}
           heading={site.projectsIntro.heading}
           lead={site.projectsIntro.lead}
         />
-        <div className="divider" />
         <Contacts contacts={site.contacts} year={site.year} name={site.resume.name} />
       </main>
     </>

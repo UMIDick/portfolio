@@ -6,6 +6,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  scroll-snap-align: start;
   --u: max(30px, min(calc((100vw - 48px) / 12.2), calc((100vh - 120px) / 13.2)));
 }
 

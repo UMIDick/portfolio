@@ -1,10 +1,11 @@
-.section {
-  padding: 88px 0 72px;
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  /* Переход по #resume: верхний отступ секции уходит за край экрана. */
-  scroll-margin-top: -64px;
+/* Размеры подобраны так, чтобы раздел целиком помещался в экран ~900px высотой.
+   Содержимое не центрируется, а прижато к верху с отступом, равным центровке
+   для высоты ~670px: тогда раскрытое описание программы удлиняет раздел только
+   вниз, и ничего выше не прыгает. */
+section.section {
+  justify-content: flex-start;
+  padding: max(40px, calc((100svh - 670px) / 2)) 0 40px;
+  gap: 22px;
 }
 
 .head {
@@ -12,8 +13,16 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.head :global(.h1) {
+  font-size: clamp(36px, 4.2vw, 52px);
+}
+
+.head :global(.lead) {
+  font-size: 20px;
 }
 
 /* Имя и подпись «Резюме» в одну строку, между ними вертикальная черта. */
@@ -28,7 +37,7 @@
 .bar {
   width: 1px;
   height: 0.75em;
-  font-size: clamp(42px, 6vw, 64px);
+  font-size: clamp(36px, 4.2vw, 52px);
   background: var(--color-neutral-500);
   opacity: 0.7;
 }
@@ -60,7 +69,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   align-items: stretch;
-  gap: 14px;
+  gap: 12px;
 }
 
 /* Общий триггер появления для блоков и карточек программ.
@@ -68,12 +77,24 @@
 .reveal {
   display: flex;
   flex-direction: column;
-  gap: 28px;
-  /* Шапка 0–0.8s → блоки 0.8–3.2s → карточки программ с 3.2s (последние
-     точки докрашиваются к ~7.2s) → кнопка «Проекты» через пару секунд. */
+  gap: 22px;
+  /* Шапка 0–0.8s → блоки 0.8–3.2s → через секунду заголовок «Навыки…» →
+     карточки программ (последние точки докрашиваются через ~4s) →
+     кнопка «Проекты» через пару секунд. */
   --head-done: 0.8s;
   --blocks-done: 3.2s;
-  --cards-done: 9.2s;
+  --tools-label: calc(var(--blocks-done) + 1s);
+  --tools-start: calc(var(--tools-label) + 0.6s);
+  --cards-done: calc(var(--tools-start) + 6s);
+}
+
+.reveal[data-reveal="pending"] .toolsLabel {
+  opacity: 0;
+}
+
+.reveal[data-reveal="in"] .toolsLabel {
+  animation: pop-in 0.6s var(--ease-out) backwards;
+  animation-delay: var(--tools-label);
 }
 
 /* Блоки скрыты, пока ряд не попал в экран; затем всплывают по очереди слева направо. */
@@ -108,9 +129,9 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 18px 20px 20px;
-  border-radius: 18px;
+  gap: 10px;
+  padding: 14px 18px 16px;
+  border-radius: 16px;
   overflow: hidden;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
@@ -172,11 +193,13 @@
 
 @media (prefers-reduced-motion: reduce) {
   .reveal[data-reveal="pending"] .col,
-  .reveal[data-reveal="pending"] .head {
+  .reveal[data-reveal="pending"] .head,
+  .reveal[data-reveal="pending"] .toolsLabel {
     opacity: 1;
   }
   .reveal[data-reveal="in"] .col,
-  .reveal[data-reveal="in"] .head {
+  .reveal[data-reveal="in"] .head,
+  .reveal[data-reveal="in"] .toolsLabel {
     animation: none;
   }
   .col,
@@ -190,13 +213,13 @@
 
 /* Название раздела сверху блока: по центру, отделено линией. */
 .label {
-  font-size: 17.25px;
+  font-size: 15.5px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-neutral-500);
   font-weight: 500;
   text-align: center;
-  padding-bottom: 12px;
+  padding-bottom: 9px;
   border-bottom: 1px solid var(--glass-border);
   transition:
     color 0.45s ease,
@@ -204,8 +227,8 @@
 }
 
 .item {
-  font-size: 21px;
-  line-height: 1.45;
+  font-size: 19px;
+  line-height: 1.4;
   text-wrap: pretty;
 }
 
@@ -215,7 +238,7 @@
 
 .sub,
 .muted {
-  font-size: 18px;
+  font-size: 16px;
   color: var(--color-neutral-400);
 }
 
@@ -227,8 +250,8 @@
 .tools {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin-top: 14px;
+  gap: 10px;
+  margin-top: 4px;
 }
 
 /* Блок программ — не карточка, линия под названием ему не нужна. */
