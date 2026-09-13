@@ -5,10 +5,60 @@
   gap: 36px;
 }
 
+/* Общий триггер появления: шапка 0–0.8s → карточки 0.8–5.3s → кнопка «Связь». */
+.reveal {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  --head-done: 0.8s;
+  --cards-done: 7.3s;
+}
+
 .head {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 10px;
+}
+
+/* Заголовок и подпись «Проекты» в одну строку, между ними вертикальная черта. */
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+}
+
+.bar {
+  width: 1px;
+  height: 0.75em;
+  font-size: clamp(32px, 4vw, 44px);
+  background: var(--color-neutral-500);
+  opacity: 0.7;
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+  60% {
+    transform: scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.reveal[data-reveal="pending"] .head {
+  opacity: 0;
+}
+
+.reveal[data-reveal="in"] .head {
+  animation: pop-in 0.8s var(--ease-out) backwards;
 }
 
 .grid {
@@ -23,6 +73,60 @@
   color: var(--color-text);
   border-radius: 14px;
   outline-offset: 6px;
+}
+
+/* Появление: каждая карточка «выскакивает» по центру ряда, чуть держится
+   и уезжает на своё место. --from — сдвиг от своего места до центра
+   (ширина карточки + зазор). Порядок: квартира, дом, школа. */
+@keyframes card-arrive {
+  0% {
+    opacity: 0;
+    transform: translateX(var(--from)) scale(0.84);
+  }
+  35% {
+    opacity: 1;
+    transform: translateX(var(--from)) scale(1.03);
+  }
+  45% {
+    transform: translateX(var(--from)) scale(1);
+  }
+  62% {
+    transform: translateX(var(--from)) scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.reveal[data-reveal="pending"] .card {
+  opacity: 0;
+}
+
+.reveal[data-reveal="in"] .card {
+  animation: card-arrive 1.7s var(--ease-out) backwards;
+  animation-delay: var(--head-done);
+}
+
+.reveal[data-reveal="in"] .card:nth-child(1) {
+  --from: calc(100% + 28px);
+}
+
+.reveal[data-reveal="in"] .card:nth-child(3) {
+  --from: calc(-100% - 28px);
+  animation-delay: calc(var(--head-done) + 1.4s);
+}
+
+.reveal[data-reveal="in"] .card:nth-child(2) {
+  --from: 0px;
+  animation-delay: calc(var(--head-done) + 2.8s);
+}
+
+/* В один-два столбца центра ряда нет — просто выскакивают по очереди. */
+@media (max-width: 900px) {
+  .reveal[data-reveal="in"] .card {
+    --from: 0px !important;
+  }
 }
 
 .icon {
@@ -65,6 +169,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .reveal[data-reveal="pending"] .card,
+  .reveal[data-reveal="pending"] .head {
+    opacity: 1;
+  }
+  .reveal[data-reveal="in"] .card,
+  .reveal[data-reveal="in"] .head {
+    animation: none;
+  }
   .icon,
   .light {
     transition: none;

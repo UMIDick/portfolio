@@ -5,12 +5,48 @@
   gap: 28px;
 }
 
+/* Общий триггер появления: шапка 0–0.8s, затем обе карточки разом. */
+.reveal {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  --head-done: 0.8s;
+}
+
 .head {
   display: flex;
   flex-direction: column;
   gap: 10px;
   align-items: center;
   text-align: center;
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+  60% {
+    transform: scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.reveal[data-reveal="pending"] .head,
+.reveal[data-reveal="pending"] .card {
+  opacity: 0;
+}
+
+.reveal[data-reveal="in"] .head {
+  animation: pop-in 0.8s var(--ease-out) backwards;
+}
+
+.reveal[data-reveal="in"] .card {
+  animation: pop-in 0.8s var(--ease-out) backwards;
+  animation-delay: var(--head-done);
 }
 
 .cards {
@@ -119,6 +155,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .reveal[data-reveal="pending"] .head,
+  .reveal[data-reveal="pending"] .card {
+    opacity: 1;
+  }
+  .reveal[data-reveal="in"] .head,
+  .reveal[data-reveal="in"] .card {
+    animation: none;
+  }
   .card {
     transition: none;
   }

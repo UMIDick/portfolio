@@ -42,13 +42,13 @@ function markFor(name: string): Mark {
 export default function ToolCards({ tools }: { tools: Tool[] }) {
   return (
     <ul className={styles.grid}>
-      {tools.map((t) => {
+      {tools.map((t, i) => {
         const { mark, color, icon, solid, plate } = markFor(t.name);
         return (
           <li
             key={t.name}
             className={styles.card}
-            style={{ "--brand": color, "--plate": plate } as React.CSSProperties}
+            style={{ "--brand": color, "--plate": plate, "--i": i } as React.CSSProperties}
           >
             {icon ? (
               <span
@@ -63,8 +63,12 @@ export default function ToolCards({ tools }: { tools: Tool[] }) {
             )}
             <span className={styles.name}>{t.name}</span>
             <span className={styles.dots} role="img" aria-label={`уровень ${t.level} из ${LEVELS}`}>
-              {Array.from({ length: LEVELS }, (_, i) => (
-                <span key={i} className={i < t.level ? styles.dotOn : styles.dot} />
+              {Array.from({ length: LEVELS }, (_, d) => (
+                <span
+                  key={d}
+                  className={d < t.level ? styles.dotOn : styles.dot}
+                  style={{ "--d": d } as React.CSSProperties}
+                />
               ))}
             </span>
           </li>

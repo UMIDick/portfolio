@@ -1,0 +1,155 @@
+/* Плавающая кнопка-переход в правом нижнем углу: стекло с акцентным
+   свечением и расходящимися волнами, чтобы притянуть взгляд.
+   Живёт внутри обёртки Stagger: внешний слой (.cta) показывается только пока
+   обёртка на экране, внутренний (.ctaBody) — вид, вход (после --cta-delay)
+   и наведение. */
+.cta {
+  position: fixed;
+  right: 40px;
+  bottom: 36px;
+  z-index: 20;
+  text-decoration: none;
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s var(--ease-out);
+}
+
+/* Раздел ушёл с экрана — кнопка плавно прячется. */
+[data-stagger]:not([data-visible]) .cta {
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+}
+
+.ctaBody {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 22px 14px 26px;
+  border-radius: 999px;
+  font-size: 18px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-neutral-100);
+  background: color-mix(in srgb, var(--color-accent) 24%, var(--glass-bg));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 60%, var(--glass-border));
+  box-shadow:
+    var(--glass-sheen),
+    var(--glass-shadow),
+    0 0 24px color-mix(in srgb, var(--color-accent) 35%, transparent);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  transition:
+    transform 0.45s var(--ease-out),
+    background 0.45s ease,
+    box-shadow 0.45s ease;
+}
+
+/* Две волны, расходящиеся от кнопки со сдвигом в полпериода. */
+.ctaBody::before,
+.ctaBody::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  border: 1.5px solid var(--color-accent-400);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 50%, transparent);
+  animation: cta-wave 4s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+  pointer-events: none;
+}
+
+.ctaBody::after {
+  animation-delay: 2s;
+}
+
+.cta:hover .ctaBody {
+  transform: translateY(-3px);
+  background: color-mix(in srgb, var(--color-accent) 40%, var(--glass-bg-hover));
+  box-shadow:
+    var(--glass-sheen),
+    var(--glass-shadow-hover),
+    0 0 36px color-mix(in srgb, var(--color-accent) 55%, transparent);
+}
+
+.ctaArrow {
+  transition: transform 0.45s var(--ease-out);
+}
+
+.cta:hover .ctaArrow {
+  transform: translateY(4px);
+}
+
+@keyframes cta-wave {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  12% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.22);
+  }
+}
+
+@keyframes cta-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.9);
+  }
+  60% {
+    transform: translateY(-4px) scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+[data-reveal="pending"] .ctaBody {
+  opacity: 0;
+}
+
+[data-reveal="pending"] .cta {
+  pointer-events: none;
+}
+
+[data-reveal="in"] .ctaBody {
+  animation: cta-in 0.7s var(--ease-out) backwards;
+  animation-delay: var(--cta-delay, 0s);
+}
+
+@media (max-width: 600px) {
+  .cta {
+    right: 24px;
+    bottom: 20px;
+  }
+  .ctaBody {
+    padding: 12px 18px 12px 20px;
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal="pending"] .ctaBody {
+    opacity: 1;
+  }
+  [data-reveal="pending"] .cta {
+    pointer-events: auto;
+  }
+  [data-reveal="in"] .ctaBody,
+  .ctaBody::before,
+  .ctaBody::after {
+    animation: none;
+  }
+  .cta,
+  .ctaBody,
+  .ctaArrow {
+    transition: none;
+  }
+  .cta:hover .ctaBody {
+    transform: none;
+  }
+}

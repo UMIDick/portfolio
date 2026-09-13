@@ -51,6 +51,68 @@
   z-index: 1;
 }
 
+/* Появление (триггер — обёртка Stagger в резюме, ставит data-reveal).
+   1) Когда три блока резюме доехали (--blocks-done), пустые карточки
+      «выскакивают» все сразу.
+   2) Следом слева направо по одной проявляется содержимое карточки,
+      затем точки уровня закрашиваются цветом программы одна за другой. */
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  60% {
+    transform: scale(1.03);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fill-dot {
+  from {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--color-neutral-700);
+  }
+  to {
+    background: var(--brand);
+    box-shadow: inset 0 0 0 1px transparent;
+  }
+}
+
+[data-reveal="pending"] .card,
+[data-reveal="pending"] .card > * {
+  opacity: 0;
+}
+
+[data-reveal="in"] .card {
+  animation: pop 0.7s var(--ease-out) backwards;
+  animation-delay: var(--blocks-done, 0s);
+}
+
+[data-reveal="in"] .card > * {
+  --show: calc(var(--blocks-done, 0s) + 0.5s + var(--i, 0) * 0.22s);
+  animation: fade-up 0.5s var(--ease-out) backwards;
+  animation-delay: var(--show);
+}
+
+[data-reveal="in"] .dotOn {
+  animation: fill-dot 0.3s ease backwards;
+  animation-delay: calc(var(--show) + 0.25s + var(--d, 0) * 0.12s);
+}
+
 /* Под курсором стекло подсвечивается цветом бренда программы. */
 .card:hover {
   transform: translateY(-4px);
@@ -164,6 +226,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  [data-reveal="pending"] .card,
+  [data-reveal="pending"] .card > * {
+    opacity: 1;
+  }
+  [data-reveal="in"] .card,
+  [data-reveal="in"] .card > *,
+  [data-reveal="in"] .dotOn {
+    animation: none;
+  }
   .card,
   .card::after {
     transition: none;

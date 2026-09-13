@@ -10,8 +10,49 @@
 .head {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 10px;
   margin-bottom: 12px;
+}
+
+/* Имя и подпись «Резюме» в одну строку, между ними вертикальная черта. */
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+}
+
+.bar {
+  width: 1px;
+  height: 0.75em;
+  font-size: clamp(42px, 6vw, 64px);
+  background: var(--color-neutral-500);
+  opacity: 0.7;
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+  60% {
+    transform: scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.reveal[data-reveal="pending"] .head {
+  opacity: 0;
+}
+
+.reveal[data-reveal="in"] .head {
+  animation: pop-in 0.8s var(--ease-out) backwards;
 }
 
 /* Образование, опыт и языки — три равных блока в одну линию. */
@@ -22,8 +63,21 @@
   gap: 14px;
 }
 
+/* Общий триггер появления для блоков и карточек программ.
+   --blocks-done — момент, когда третий блок доехал: с него стартуют программы. */
+.reveal {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  /* Шапка 0–0.8s → блоки 0.8–3.2s → карточки программ с 3.2s (последние
+     точки докрашиваются к ~7.2s) → кнопка «Проекты» через пару секунд. */
+  --head-done: 0.8s;
+  --blocks-done: 3.2s;
+  --cards-done: 9.2s;
+}
+
 /* Блоки скрыты, пока ряд не попал в экран; затем всплывают по очереди слева направо. */
-.grid:not([data-in]) .col {
+.reveal[data-reveal="pending"] .col {
   opacity: 0;
 }
 
@@ -38,14 +92,15 @@
   }
 }
 
-.grid[data-in] .col {
-  animation: slide-in 0.6s var(--ease-out) backwards;
+.reveal[data-reveal="in"] .col {
+  animation: slide-in 1.2s var(--ease-out) backwards;
+  animation-delay: var(--head-done);
 }
-.grid[data-in] .col:nth-child(2) {
-  animation-delay: 0.3s;
+.reveal[data-reveal="in"] .col:nth-child(2) {
+  animation-delay: calc(var(--head-done) + 0.6s);
 }
-.grid[data-in] .col:nth-child(3) {
-  animation-delay: 0.6s;
+.reveal[data-reveal="in"] .col:nth-child(3) {
+  animation-delay: calc(var(--head-done) + 1.2s);
 }
 
 .col {
@@ -116,10 +171,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .grid:not([data-in]) .col {
+  .reveal[data-reveal="pending"] .col,
+  .reveal[data-reveal="pending"] .head {
     opacity: 1;
   }
-  .grid[data-in] .col {
+  .reveal[data-reveal="in"] .col,
+  .reveal[data-reveal="in"] .head {
     animation: none;
   }
   .col,
