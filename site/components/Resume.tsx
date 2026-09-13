@@ -1,5 +1,6 @@
 import type { Resume as ResumeData } from "@/lib/types";
 import ToolCards from "./ToolCards";
+import Stagger from "./Stagger";
 import styles from "./Resume.module.css";
 
 export default function Resume({ resume }: { resume: ResumeData }) {
@@ -15,8 +16,8 @@ export default function Resume({ resume }: { resume: ResumeData }) {
         </p>
       </div>
 
-      <div className={styles.grid}>
-        <div className={`${styles.col} rise`}>
+      <Stagger className={styles.grid}>
+        <div className={styles.col}>
           <h2 className={styles.label}>Образование</h2>
           <p className={styles.item}>
             {resume.education.degree}, {resume.education.university}
@@ -24,7 +25,7 @@ export default function Resume({ resume }: { resume: ResumeData }) {
           {resume.education.gpa && <p className={styles.muted}>{resume.education.gpa}</p>}
         </div>
 
-        <div className={`${styles.col} rise rise-2`}>
+        <div className={styles.col}>
           <h2 className={styles.label}>Опыт</h2>
           {resume.experience.map((e) => (
             <p key={e.role + e.company} className={styles.item}>
@@ -35,7 +36,7 @@ export default function Resume({ resume }: { resume: ResumeData }) {
           ))}
         </div>
 
-        <div className={`${styles.col} rise rise-3`}>
+        <div className={styles.col}>
           <h2 className={styles.label}>Языки</h2>
           {resume.languages.map((l) => (
             <p key={l.name} className={styles.item}>
@@ -43,10 +44,12 @@ export default function Resume({ resume }: { resume: ResumeData }) {
             </p>
           ))}
         </div>
-      </div>
+      </Stagger>
 
-      <div className={`${styles.tools} rise rise-4`}>
-        <h2 className={styles.label}>Навыки работы в программах</h2>
+      {/* Анимация только на заголовке: анимируемая обёртка над стеклянными
+          карточками даёт в Chromium светлые полосы от backdrop-filter. */}
+      <div className={styles.tools}>
+        <h2 className={`${styles.label} rise`}>Навыки работы в программах</h2>
         <ToolCards tools={resume.tools} />
         {resume.toolsNote && <p className={styles.muted}>{resume.toolsNote}</p>}
       </div>
