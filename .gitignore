@@ -16,3 +16,11 @@ build/
 Thumbs.db
 desktop.ini
 *.log
+
+# исходники Revit (IFC, шаблоны RTE) — сотни МБ, в репозиторий не кладём
+assets/revit files/**/*.ifc
+assets/revit files/**/*.rte
+assets/revit files/**/*.fbx
+
+# остальные исходники Revit (RVT, RFA, бэкапы) — тоже не в репозиторий
+assets/revit files/

@@ -4,14 +4,20 @@ import Stagger from "./Stagger";
 import Cta from "./Cta";
 import styles from "./Resume.module.css";
 
-export default function Resume({ resume }: { resume: ResumeData }) {
+/** warm — копия «вхолостую» для прогрева видеокарты (GpuWarmup): без id и без участия в перелистывании. */
+export default function Resume({ resume, warm = false }: { resume: ResumeData; warm?: boolean }) {
   return (
-    <section id="resume" className={`${styles.section} page`} aria-labelledby="resume-title">
-      <Stagger className={styles.reveal}>
+    <section
+      id={warm ? undefined : "resume"}
+      className={`${styles.section} page`}
+      aria-labelledby={warm ? undefined : "resume-title"}
+      data-screen={warm ? undefined : ""}
+    >
+      <Stagger className={styles.reveal} once={warm ? undefined : "resume"}>
         {/* Шапка: имя | Резюме — по центру, «выскакивает» первой. */}
         <div className={styles.head}>
           <div className={styles.title}>
-            <h1 id="resume-title" className="h1">
+            <h1 id={warm ? undefined : "resume-title"} className="h1">
               {resume.name}
             </h1>
             <span className={styles.bar} aria-hidden="true" />
@@ -59,8 +65,9 @@ export default function Resume({ resume }: { resume: ResumeData }) {
           {resume.toolsNote && <p className={styles.muted}>{resume.toolsNote}</p>}
         </div>
 
-        {/* Кнопка к проектам — появляется последней, после карточек программ. */}
-        <Cta href="#projects" label="Проекты" delay="var(--cards-done)" />
+        {/* Кнопка к следующему экрану — общая на главной (NextCta); здесь только в копии
+            для прогрева видеокарты: размытие под кнопкой — свой шейдер. */}
+        {warm && <Cta href="#projects" label="Проекты" delay="var(--cards-done)" />}
       </Stagger>
     </section>
   );

@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Для Docker/Railway: самодостаточный сервер в .next/standalone
+  output: "standalone",
 };
 
 export default nextConfig;

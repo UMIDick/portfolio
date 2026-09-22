@@ -1,4 +1,7 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
+import ScreenPager from "@/components/ScreenPager";
+import ViewTransitionScroll from "@/components/ViewTransitionScroll";
 import { getSite } from "@/lib/content";
 import "./globals.css";
 
@@ -29,7 +32,16 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ru">
-      <body>{children}</body>
+      <body>
+        {children}
+        <ScreenPager />
+        <ViewTransitionScroll />
+        {/* Перехват кнопки «Назад» раньше роутера Next: слушатель должен быть
+            зарегистрирован первым (см. ProjectModel — обратная анимация макета) */}
+        <Script id="popstate-hook" strategy="beforeInteractive">
+          {`addEventListener("popstate",function(e){var h=window.__popstateHook;if(h)h(e)},true)`}
+        </Script>
+      </body>
     </html>
   );
 }

@@ -119,7 +119,7 @@ export default function Intro({ speed = 1, showScrollHint = true }: IntroProps) 
   const animate = scatter !== null;
 
   return (
-    <section className={styles.intro} aria-label="Обложка портфолио">
+    <section className={styles.intro} aria-label="Обложка портфолио" data-screen>
       <div className={styles.board}>
         {TILES.map((t) => {
           const k = KINDS[t.k];

@@ -165,14 +165,17 @@ section.section {
   z-index: 1;
 }
 
-.col:hover {
+/* .gpu-warm-hover — то же состояние без курсора: прогрев видеокарты (GpuWarmup) */
+.col:hover,
+:global(.gpu-warm-hover) .col {
   transform: translateY(-4px);
   background: var(--glass-bg-hover);
   border-color: var(--glass-border-hover);
   box-shadow: var(--glass-sheen), var(--glass-shadow-hover);
 }
 
-.col:hover::after {
+.col:hover::after,
+:global(.gpu-warm-hover) .col::after {
   opacity: 1;
   transform: translate3d(22%, -8%, 0);
 }

@@ -77,9 +77,13 @@ export interface Project {
   description: string;
   /** Иконки-обложки в двух темах (квадратные). */
   icon: { dark: string; light: string };
+  /** Презентационный лист проекта (А3, альбомная) — показывается в начале страницы. */
+  cover?: { src: string; width: number; height: number };
   /** Цвета карточки/страницы проекта из палитры обложки. */
   palette: { bg: string; ink: string };
   /** Диапазон номеров листов, как в ТЗ заказчика. */
   sheetRange: [number, number];
+  /** Чертежи ещё не готовы: лента листов размыта и не открывается, поверх — «still under construction». */
+  underConstruction?: boolean;
   sheets: Sheet[];
 }

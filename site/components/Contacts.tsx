@@ -4,11 +4,11 @@ import styles from "./Contacts.module.css";
 
 export default function Contacts({ contacts, year, name }: { contacts: ContactsData; year: number; name: string }) {
   return (
-    <section id="contacts" className={`${styles.section} page`} aria-labelledby="contacts-title">
+    <section id="contacts" className={`${styles.section} page`} aria-labelledby="contacts-title" data-screen>
       {/* Раздел последний и невысокий — его верх виден ещё с проектов, поэтому
           каскад стартует, когда шапка поднялась в верхнюю треть экрана (или
           страница докручена до конца), а не когда блок лишь выглядывает снизу. */}
-      <Stagger className={styles.reveal} edge={0.35}>
+      <Stagger className={styles.reveal} edge={0.35} once="contacts">
         {/* Шапка «выскакивает» первой, затем обе карточки одновременно. */}
         <div className={styles.head}>
           <div className="kicker">Контакты</div>

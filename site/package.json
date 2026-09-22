@@ -7,18 +7,35 @@
     "build": "next build",
     "start": "next start",
     "placeholders": "node scripts/make-placeholders.mjs",
-    "typecheck": "tsc --noEmit"
+    "sheets": "python scripts/make-sheets.py",
+    "models": "python scripts/make-models.py && python scripts/make-school-ifc.py && python scripts/make-flat-ifc.py && python scripts/make-tower-ifc.py",
+    "models:flat": "python scripts/make-flat-ifc.py",
+    "models:school": "python scripts/make-school-ifc.py",
+    "models:tower": "python scripts/make-tower-ifc.py",
+    "models:school:pdf": "python scripts/extract-school.py && node scripts/make-school-model.mjs",
+    "typecheck": "tsc --noEmit",
+    "perf": "node scripts/perf/prof.mjs && node scripts/perf/report.mjs",
+    "perf:trace": "node scripts/perf/trace.mjs",
+    "perf:first": "node scripts/perf/first.mjs && node scripts/perf/report.mjs .perf/first.json",
+    "perf:resume": "node scripts/perf/resume.mjs && node scripts/perf/report.mjs .perf/first.json",
+    "perf:cards": "node scripts/perf/cards.mjs && node scripts/perf/report.mjs .perf/first.json",
+    "perf:full": "node scripts/perf/full.mjs",
+    "check:nav": "node scripts/perf/nav.mjs",
+    "perf:reload": "node scripts/perf/reload.mjs && node scripts/perf/report.mjs .perf/first.json"
   },
   "dependencies": {
     "next": "16.3.5",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "three": "^0.186.0"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.186.0",
+    "gltfpack": "^1.2.0",
     "typescript": "^5"
   }
 }

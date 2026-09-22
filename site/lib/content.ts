@@ -45,7 +45,7 @@ export async function getProject(slug: string): Promise<Project | null> {
   return projects.find((p) => p.slug === slug) ?? null;
 }
 
-/** Соседние проекты для навигации «предыдущий / следующий» на странице проекта. */
+/** Соседние проекты для навигации «предыдущий / следующий» на странице проекта (по кругу). */
 export async function getProjectNeighbours(slug: string): Promise<{
   prev: Project | null;
   next: Project | null;
@@ -53,5 +53,7 @@ export async function getProjectNeighbours(slug: string): Promise<{
   const projects = await getProjects();
   const i = projects.findIndex((p) => p.slug === slug);
   if (i === -1) return { prev: null, next: null };
-  return { prev: projects[i - 1] ?? null, next: projects[i + 1] ?? null };
+  if (projects.length < 2) return { prev: null, next: null };
+  const n = projects.length;
+  return { prev: projects[(i - 1 + n) % n], next: projects[(i + 1) % n] };
 }

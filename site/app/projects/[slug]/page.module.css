@@ -1,4 +1,13 @@
+/* Высота шапки фиксирована — от неё считается высота первого экрана. */
 .top {
+  --top-h: 64px;
+  box-sizing: border-box;
+  /* Над холстом 3D-макета, который заходит на шапку */
+  position: relative;
+  z-index: 3;
+  flex: none;
+  width: 100%;
+  height: var(--top-h);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -32,18 +41,67 @@
   }
 }
 
+/* ── Два экрана; переход между ними — ScreenPager и анимация [data-screen] в globals.css ── */
+
+.screen1 {
+  display: flex;
+  flex-direction: column;
+  /* Холст 3D-макета шире иконки — не даём ему создать горизонтальную прокрутку */
+  overflow-x: clip;
+}
+.firstScreen {
+  display: flex;
+  flex-direction: column;
+  /* Элемент flex-колонки с margin: auto иначе растягивается до max-width контейнера */
+  width: 100%;
+}
+
+@media (min-width: 761px) and (min-height: 560px) {
+  .screen {
+    box-sizing: border-box;
+    height: 100svh;
+  }
+  .firstScreen {
+    flex: 1;
+    min-height: 0;
+  }
+  .firstScreen .sheetsSection {
+    flex: 1;
+    min-height: 0;
+  }
+}
+
 .hero {
   display: grid;
-  grid-template-columns: minmax(200px, 320px) 1fr;
-  gap: 48px;
+  grid-template-columns: minmax(140px, min(320px, 30svh)) 1fr;
+  gap: clamp(28px, 4vw, 48px);
   align-items: center;
-  padding: 56px 0 72px;
+  padding: clamp(12px, 3svh, 40px) 0 clamp(16px, 3.5svh, 40px);
+}
+.hero h1 {
+  font-size: clamp(36px, min(6vw, 7svh), 64px);
 }
 @media (max-width: 760px) {
   .hero {
     grid-template-columns: 1fr;
     gap: 32px;
   }
+}
+
+/* Ячейка иконки: сама иконка и 3D-макет поверх неё */
+.coverStage {
+  position: relative;
+}
+/* Макет показан — картинка под ним растворяется (при уходе со страницы
+   ProjectModel ставит data-model="off", и она возвращается мгновенно).
+   Прозрачность — у самой картинки: у .cover свою анимирует .rise. */
+.coverStage[data-model="on"] .cover {
+  box-shadow: none;
+  transition: box-shadow 0.35s ease;
+}
+.coverStage[data-model="on"] .cover img {
+  opacity: 0;
+  transition: opacity 0.35s ease;
 }
 
 .cover {
@@ -86,36 +144,147 @@
   font-size: 21px;
 }
 
+/* Карусель листов — в скруглённой стеклянной панели, как виджет.
+   Под листами — градиентный фон в цветах проекта (--p-bg, --p-ink) и сайта:
+   широкая полоса (::before, вдвое шире панели) из мягких пятен, которая едет
+   под листами вместе с лентой (--track-p ставит SheetGallery). Только transform —
+   слой растрируется один раз и дальше лишь сдвигается компоновщиком.
+   Поверх (::after) — лёгкое зерно и блик стекла: зерно разбивает полосы
+   градиента на тёмном фоне (8 бит на канал), которые иначе видны на плавных переходах. */
 .sheetsSection {
-  padding: 72px 0;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 36px;
+  gap: clamp(8px, 1.5svh, 16px);
+  margin-bottom: clamp(16px, 3svh, 32px);
+  padding: clamp(14px, 2.2svh, 26px) clamp(16px, 2.2vw, 32px) clamp(8px, 1.4svh, 16px);
+  border-radius: clamp(24px, 3vw, 36px);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+.sheetsSection::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 auto 0 0;
+  width: 200%;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 95% at 8% 28%, color-mix(in srgb, var(--p-ink) 30%, transparent), transparent 100%),
+    radial-gradient(30% 90% at 27% 96%, color-mix(in srgb, var(--color-accent) 22%, transparent), transparent 100%),
+    radial-gradient(34% 100% at 44% 10%, color-mix(in srgb, var(--p-bg) 70%, transparent), transparent 100%),
+    radial-gradient(30% 90% at 60% 80%, color-mix(in srgb, var(--cover-blue) 24%, transparent), transparent 100%),
+    radial-gradient(36% 100% at 78% 20%, color-mix(in srgb, var(--p-ink) 26%, transparent), transparent 100%),
+    radial-gradient(32% 90% at 95% 75%, color-mix(in srgb, var(--p-bg) 64%, transparent), transparent 100%),
+    linear-gradient(115deg, color-mix(in srgb, var(--p-bg) 34%, transparent), transparent 45%, color-mix(in srgb, var(--color-accent) 10%, transparent) 100%);
+  transform: translate3d(calc(var(--track-p, 0) * -50%), 0, 0);
+  transition: transform 0.7s var(--ease-out);
+  will-change: transform;
+}
+.sheetsSection::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: var(--glass-sheen);
+  /* Зерно: маленькая плитка шума, одна растеризация */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.16 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+  opacity: 0.55;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheetsSection::before {
+    transition: none;
+  }
 }
 
-.sheetsHead {
+.sheetsHint {
+  text-align: center;
+  font-size: 16px;
+  color: var(--color-neutral-500);
+}
+
+/* Второй экран: одинаковый отступ --g сверху, снизу и между планшетом и блоками.
+   Ширина планшета считается от высоты окна, чтобы всё помещалось целиком. */
+.screen2 {
+  --g: clamp(20px, 4svh, 40px);
+  --nav-h: 116px;
+  display: flex;
+  align-items: center;
+  padding-block: var(--g);
+}
+
+.board {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--g);
+}
+@media (min-width: 761px) and (min-height: 560px) {
+  .board {
+    /* + 64px — боковые поля .container */
+    width: min(100%, calc((100svh - 3 * var(--g) - var(--nav-h)) * var(--cover-ratio, 1.414) + 64px));
+  }
+}
+
+.poster {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  cursor: zoom-in;
+  border-radius: var(--radius-lg, 18px);
+  overflow: hidden;
+  background: var(--p-bg);
+  box-shadow: var(--shadow-md);
+  transition:
+    box-shadow 0.4s ease,
+    transform 0.4s var(--ease-out);
+}
+.poster:hover {
+  box-shadow: var(--shadow-lg, var(--shadow-md));
+  transform: translateY(-3px);
+}
+.poster img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .neighbours {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 28px;
-  padding: 56px 0 24px;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  gap: var(--g);
+  min-height: var(--nav-h);
 }
 @media (max-width: 600px) {
   .neighbours {
     grid-template-columns: 1fr;
   }
+  .copy {
+    order: 1;
+  }
 }
 
 .neighbour {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 22px 24px;
+  box-sizing: border-box;
+  /* Три строки по сетке: надзаголовок сверху, тип снизу, название — в середине;
+     обе карточки одной высоты, поэтому строки у соседей на одном уровне. */
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  justify-items: center;
+  text-align: center;
+  row-gap: 8px;
+  padding: 18px 24px;
   border-radius: 18px;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
@@ -135,10 +304,6 @@
   transform: translateY(-3px);
   color: var(--color-text);
 }
-.neighbourRight {
-  text-align: right;
-  align-items: flex-end;
-}
 
 .neighbourKicker {
   font-size: 14px;
@@ -147,6 +312,7 @@
   color: var(--color-neutral-500);
 }
 .neighbourTitle {
+  align-self: center;
   font-size: 24px;
   line-height: 1.2;
 }
@@ -156,8 +322,10 @@
 }
 
 .copy {
-  margin-top: 40px;
-  font-size: 16px;
+  align-self: center;
+  margin: 0;
+  font-size: 15px;
   color: var(--color-neutral-600);
   text-align: center;
+  white-space: nowrap;
 }

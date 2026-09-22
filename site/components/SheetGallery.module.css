@@ -26,14 +26,15 @@
   aspect-ratio: 420 / 297;
   overflow: hidden;
   border-radius: 14px;
+  /* Без backdrop-filter: картинка закрывает лист целиком, а каждый такой фильтр —
+     отдельная поверхность для компоновщика (их в ленте до 25) */
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-sheen), var(--glass-shadow);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
   transition:
     transform 0.5s var(--ease-out),
-    box-shadow 0.5s ease;
+    box-shadow 0.5s ease,
+    border-color 0.5s ease;
 }
 .paper img {
   width: 100%;
@@ -43,7 +44,9 @@
 .thumb:hover .paper,
 .thumb:focus-visible .paper {
   transform: translateY(-6px);
-  box-shadow: var(--shadow-lg);
+  /* Подъём — мягкой тенью и чуть светлее кромкой, без резкого кольца. */
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-sheen), var(--glass-shadow-hover);
 }
 
 .caption {
@@ -62,164 +65,6 @@
   color: var(--color-neutral-300);
 }
 
-/* ── Просмотр ── */
-
-.viewer {
-  border: 0;
-  padding: 0;
-  margin: 0;
-  width: 100vw;
-  height: 100vh;
-  height: 100dvh;
-  max-width: none;
-  max-height: none;
-  background: transparent;
-  color: var(--color-text);
-}
-/* Полноэкранный просмотр: фон страницы за листом размывается, как в iOS. */
-.viewer::backdrop {
-  background: rgba(10, 11, 18, 0.72);
-  -webkit-backdrop-filter: blur(28px) saturate(140%);
-  backdrop-filter: blur(28px) saturate(140%);
-}
-@supports not (backdrop-filter: blur(1px)) {
-  .viewer::backdrop {
-    background: rgba(10, 11, 18, 0.94);
-  }
-}
-
-.viewerInner {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-}
-
-/* Верхняя панель просмотра — стеклянная полоса над листом. */
-.bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-}
-
-.barText {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-.barProject {
-  font-size: 13px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--color-neutral-500);
-}
-.barTitle {
-  font-size: 19px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.barRight {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-shrink: 0;
-}
-.counter {
-  font-size: 17px;
-  color: var(--color-neutral-400);
-  font-variant-numeric: tabular-nums;
-}
-
-.iconBtn,
-.nav {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg);
-  color: var(--color-neutral-200);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
-  box-shadow: var(--glass-sheen);
-  cursor: pointer;
-  border-radius: 999px;
-  transition:
-    background 0.25s ease,
-    border-color 0.25s ease;
-}
-.iconBtn:hover,
-.nav:hover {
-  background: var(--glass-bg-hover);
-  border-color: var(--glass-border-hover);
-}
-.iconBtn {
-  width: 42px;
-  height: 42px;
-}
-
-.stage {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 72px 24px;
-  position: relative;
-}
-
-.sheet {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-lg);
-  background: var(--color-surface);
-}
-
-.nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 52px;
-  height: 52px;
-}
-.navPrev {
-  left: 12px;
-}
-.navNext {
-  right: 12px;
-}
-
-@media (max-width: 640px) {
-  .stage {
-    padding: 0 8px 80px;
-  }
-  .nav {
-    top: auto;
-    bottom: 16px;
-    transform: none;
-  }
-  .navPrev {
-    left: calc(50% - 64px);
-  }
-  .navNext {
-    right: calc(50% - 64px);
-  }
-  .barTitle {
-    font-size: 16px;
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .paper {
@@ -229,4 +74,209 @@
 
 .item {
   min-width: 0;
+}
+
+/* ── Карусель ── */
+
+@property --fade-l {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --fade-r {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+.carousel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Чертежи ещё не готовы (locked): лента размыта и приглушена, поверх — надпись.
+   Размытие статичное — растрируется один раз, когда листы доехали. */
+.carousel[data-locked] > :not(.lockedLabel) {
+  filter: blur(9px) saturate(0.8);
+  opacity: 0.55;
+}
+
+.lockedLabel {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0 16px;
+  text-align: center;
+  font-size: clamp(22px, 3.2vw, 44px);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cover-white);
+  text-shadow: 0 2px 18px rgb(0 0 0 / 0.45);
+  animation: locked-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) calc(var(--slides-delay, 0.25s) + 0.4s) both;
+}
+
+@keyframes locked-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lockedLabel {
+    animation: none;
+  }
+}
+
+.track {
+  --fade-l: 0px;
+  --fade-r: 0px;
+  list-style: none;
+  /* Поля вокруг листов, чтобы подъём и тень при наведении не срезались */
+  margin: -8px -16px 0;
+  padding: 16px 16px 12px;
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 16px;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  /* Плавное затухание листов у краёв ленты, если туда ещё можно листать */
+  -webkit-mask-image: var(--fade-mask);
+  mask-image: var(--fade-mask);
+  --fade-mask: linear-gradient(
+    to right,
+    rgb(0 0 0 / 0) 0,
+    rgb(0 0 0 / 0.12) calc(var(--fade-l) * 0.25),
+    rgb(0 0 0 / 0.45) calc(var(--fade-l) * 0.5),
+    rgb(0 0 0 / 0.85) calc(var(--fade-l) * 0.8),
+    #000 var(--fade-l),
+    #000 calc(100% - var(--fade-r)),
+    rgb(0 0 0 / 0.85) calc(100% - var(--fade-r) * 0.8),
+    rgb(0 0 0 / 0.45) calc(100% - var(--fade-r) * 0.5),
+    rgb(0 0 0 / 0.12) calc(100% - var(--fade-r) * 0.25),
+    rgb(0 0 0 / 0) 100%
+  );
+  transition:
+    --fade-l 0.5s var(--ease-out),
+    --fade-r 0.5s var(--ease-out);
+}
+.track::-webkit-scrollbar {
+  display: none;
+}
+.fadeStart {
+  --fade-l: 120px;
+}
+.fadeEnd {
+  --fade-r: 120px;
+}
+
+.slide {
+  flex: 0 0 min(440px, 82%);
+  min-width: 0;
+  scroll-snap-align: start;
+  /* Листы по очереди въезжают справа (--slides-delay задаёт SheetGallery).
+     Сам лист только сдвигается, а прозрачность — у стекла и подписи отдельно:
+     opacity на родителе меняла бы цвет стекла (backdrop-filter) во время анимации. */
+  --slide-delay: calc(var(--slides-delay, 0.25s) + var(--i, 0) * 90ms);
+  animation: slide-in 0.9s var(--ease-out) backwards;
+  animation-delay: var(--slide-delay);
+}
+.slide .paper,
+.slide .caption {
+  animation: slide-fade 0.6s ease backwards;
+  animation-delay: var(--slide-delay);
+}
+@keyframes slide-in {
+  from {
+    transform: translateX(72px) scale(0.96);
+  }
+}
+@keyframes slide-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .slide,
+  .slide .paper,
+  .slide .caption {
+    animation: none;
+  }
+}
+
+/* На первом экране лента заполняет оставшуюся высоту, а ширина листа
+   считается от неё (А3: 420/297), чтобы лист с подписью помещался целиком. */
+@media (min-width: 761px) and (min-height: 560px) {
+  .track {
+    flex: 1;
+    min-height: 150px;
+    container-type: size;
+  }
+  .slide {
+    flex-basis: min(calc((100cqh - 40px) * 420 / 297), 82%);
+  }
+}
+
+/* Стрелки поверх ленты, по центру листов. */
+.trackNav {
+  position: absolute;
+  inset: 8px 0 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 10px;
+  pointer-events: none;
+}
+.trackNav .iconBtn {
+  pointer-events: auto;
+  width: 46px;
+  height: 46px;
+  background: rgba(20, 21, 30, 0.6);
+  transition:
+    opacity 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease;
+}
+.trackNav .iconBtn:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+.slide .caption {
+  min-width: 0;
+}
+.slide .title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Круглые кнопки ленты (стекло) */
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--color-neutral-200);
+  -webkit-backdrop-filter: var(--glass-blur-strong);
+  backdrop-filter: var(--glass-blur-strong);
+  box-shadow: var(--glass-sheen);
+  cursor: pointer;
+  border-radius: 999px;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease;
+}
+.iconBtn:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
 }

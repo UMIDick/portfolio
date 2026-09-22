@@ -1,0 +1,10 @@
+**/node_modules
+**/.next
+**/.perf
+**/.model-debug
+.git
+assets
+uploads
+_ds
+**/.env
+**/.env*.local

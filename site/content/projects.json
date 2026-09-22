@@ -5,8 +5,9 @@
     "kind": "Жилой интерьер",
     "description": "Комплект рабочих чертежей двухкомнатной квартиры: обмерный и демонтажный планы, планировочное решение, планы полов и потолков, электрика, развёртки стен и узлы.",
     "icon": { "dark": "/icons/flat-dark.png", "light": "/icons/flat-light.png" },
+    "cover": { "src": "/projects/flat/cover.jpg", "width": 2560, "height": 1811 },
     "palette": { "bg": "#3a2f2c", "ink": "#b39373" },
-    "sheetRange": [2, 25]
+    "sheetRange": [1, 30]
   },
   {
     "slug": "school",
@@ -14,8 +15,9 @@
     "kind": "Общественное здание",
     "description": "Рабочие чертежи здания музыкальной школы: генплан, поэтажные планы, фасады, разрезы, план кровли и характерные узлы.",
     "icon": { "dark": "/icons/school-dark.png", "light": "/icons/school-light.png" },
+    "cover": { "src": "/projects/school/cover.jpg", "width": 2560, "height": 1811 },
     "palette": { "bg": "#3f2d3b", "ink": "#c08aa5" },
-    "sheetRange": [26, 40]
+    "sheetRange": [1, 15]
   },
   {
     "slug": "tower",
@@ -23,7 +25,9 @@
     "kind": "Многоквартирный жилой дом",
     "description": "Рабочие чертежи многоэтажного жилого дома: планы типового и первого этажей, фасады, разрезы, схема расположения элементов и узлы.",
     "icon": { "dark": "/icons/tower-dark.png", "light": "/icons/tower-light.png" },
+    "cover": { "src": "/projects/tower/cover-v2.jpg", "width": 2560, "height": 1811 },
     "palette": { "bg": "#1e2a3e", "ink": "#7d95bf" },
-    "sheetRange": [41, 50]
+    "sheetRange": [41, 50],
+    "underConstruction": true
   }
 ]

@@ -16,7 +16,8 @@
 }
 
 /* Раздел ушёл с экрана — кнопка быстро прячется. */
-[data-stagger]:not([data-visible]) .cta {
+[data-stagger]:not([data-visible]) .cta,
+.cta[data-hidden] {
   opacity: 0;
   transform: translateY(12px);
   pointer-events: none;
@@ -41,8 +42,8 @@
     var(--glass-sheen),
     var(--glass-shadow),
     0 0 24px color-mix(in srgb, var(--color-accent) 35%, transparent);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur-strong);
+  backdrop-filter: var(--glass-blur-strong);
   transition:
     transform 0.45s var(--ease-out),
     background 0.45s ease,
@@ -124,6 +125,11 @@
   animation-delay: var(--cta-delay, 0s);
 }
 
+/* Общая кнопка главной (NextCta): первый выход — тем же прыжком, дальше она уже на месте */
+.ctaBody[data-enter] {
+  animation: cta-in 0.7s var(--ease-out) backwards;
+}
+
 @media (max-width: 600px) {
   .cta {
     right: 24px;
@@ -143,6 +149,7 @@
     pointer-events: auto;
   }
   [data-reveal="in"] .ctaBody,
+  .ctaBody[data-enter],
   .ctaBody::before,
   .ctaBody::after {
     animation: none;

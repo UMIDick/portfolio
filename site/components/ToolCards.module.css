@@ -118,14 +118,17 @@
 }
 
 /* Под курсором стекло подсвечивается цветом бренда программы. */
-.card:hover {
+/* .gpu-warm-hover — то же состояние без курсора: прогрев видеокарты (GpuWarmup) */
+.card:hover,
+:global(.gpu-warm-hover) .card {
   transform: translateY(-4px);
   background: color-mix(in srgb, var(--brand) 14%, var(--glass-bg-hover));
   border-color: color-mix(in srgb, var(--brand) 45%, var(--glass-border-hover));
   box-shadow: var(--glass-sheen), var(--glass-shadow-hover);
 }
 
-.card:hover::after {
+.card:hover::after,
+:global(.gpu-warm-hover) .card::after {
   opacity: 1;
   background-position: 125% -10%;
 }

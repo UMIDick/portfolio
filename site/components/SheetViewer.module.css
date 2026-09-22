@@ -1,0 +1,188 @@
+/* Полноэкранный просмотр листа (SheetViewer): листы карусели и обложка проекта. */
+
+.viewer {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  background: transparent;
+  color: var(--color-text);
+}
+/* Полноэкранный просмотр: фон страницы за листом размывается, как в iOS.
+   .warmBackdrop — то же для копии просмотра в слое прогрева (SheetViewerWarm). */
+.viewer::backdrop,
+.warmBackdrop {
+  background: rgba(10, 11, 18, 0.72);
+  -webkit-backdrop-filter: blur(28px) saturate(140%);
+  backdrop-filter: blur(28px) saturate(140%);
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .viewer::backdrop,
+  .warmBackdrop {
+    background: rgba(10, 11, 18, 0.94);
+  }
+}
+
+/* Копия просмотра для прогрева видеокарты (GpuWarmup): на месте диалога, без него */
+.warm,
+.warmBackdrop {
+  position: absolute;
+  inset: 0;
+}
+
+.viewerInner {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+/* Верхняя строка просмотра — без своего фона, лежит на общем размытом фоне.
+   Три колонки: пустая, подпись по центру над листом, счётчик и крестик справа. */
+.bar {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, auto) 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+}
+
+.barText {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+  text-align: center;
+}
+.barProject {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-neutral-500);
+}
+.barTitle {
+  font-size: 19px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barRight {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.counter {
+  font-size: 17px;
+  color: var(--color-neutral-400);
+  font-variant-numeric: tabular-nums;
+}
+
+.iconBtn,
+.nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  color: var(--color-neutral-200);
+  -webkit-backdrop-filter: var(--glass-blur-strong);
+  backdrop-filter: var(--glass-blur-strong);
+  box-shadow: var(--glass-sheen);
+  cursor: pointer;
+  border-radius: 999px;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease;
+}
+.iconBtn:hover,
+.nav:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+}
+.iconBtn {
+  width: 42px;
+  height: 42px;
+}
+
+.stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 72px 24px;
+  position: relative;
+  /* Размер листа считается от области просмотра (cqw/cqh) — известен до загрузки
+     картинки, иначе анимацию открытия не рассчитать */
+  container-type: size;
+}
+/* Приближенный лист не заходит на строку с подписью */
+.stageZoomed {
+  overflow: hidden;
+}
+
+.sheet {
+  width: min(100cqw, 100cqh * var(--ratio, 1.414));
+  height: auto;
+  aspect-ratio: var(--ratio, 1.414);
+  /* Пока грузится полный размер, под ним — уже загруженная миниатюра (inline background-image) */
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  background-color: var(--color-surface);
+  cursor: zoom-in;
+  touch-action: none;
+  user-select: none;
+}
+.stageZoomed .sheet {
+  cursor: grab;
+}
+.stageZoomed .sheet:active {
+  cursor: grabbing;
+}
+
+.nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 52px;
+  height: 52px;
+  z-index: 1;
+}
+.navPrev {
+  left: 12px;
+}
+.navNext {
+  right: 12px;
+}
+
+@media (max-width: 640px) {
+  .stage {
+    padding: 0 8px 80px;
+  }
+  .nav {
+    top: auto;
+    bottom: 16px;
+    transform: none;
+  }
+  .navPrev {
+    left: calc(50% - 64px);
+  }
+  .navNext {
+    right: calc(50% - 64px);
+  }
+  .barTitle {
+    font-size: 16px;
+  }
+}

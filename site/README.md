@@ -41,6 +41,8 @@ public/
   projects/<slug>/sheets/ изображения листов А3
 scripts/
   make-placeholders.mjs   генерирует листы-заглушки и content/sheets/*.json
+  perf/                   профилировщик переходов: npm run perf (Chrome через CDP), perf:trace — трассировки в .perf/
+                          perf:first — первый визит на чистом профиле (COLD=1), shaders.mjs — компиляции шейдеров
 ```
 
 ## Контент и будущая админка

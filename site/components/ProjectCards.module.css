@@ -152,26 +152,31 @@
   object-fit: cover;
 }
 
+/* Тёмная версия видна по умолчанию, под курсором карточка становится светлой. */
 .light {
   opacity: 0;
   transition: opacity 0.35s ease;
 }
 
-/* Карточка под курсором приближается, остальные отходят назад */
+/* Карточка под курсором приближается, остальные отходят назад.
+   .gpu-warm-hover — то же состояние без курсора (первая карточка): прогрев видеокарты (GpuWarmup) */
 .card:hover .icon,
-.card:focus-visible .icon {
+.card:focus-visible .icon,
+:global(.gpu-warm-hover) .card:first-child .icon {
   transform: scale(1.06);
   box-shadow: 0 24px 56px rgba(0, 0, 0, 0.6);
 }
 
 .grid:has(.card:hover) .card:not(:hover) .icon,
-.grid:has(.card:focus-visible) .card:not(:focus-visible) .icon {
+.grid:has(.card:focus-visible) .card:not(:focus-visible) .icon,
+:global(.gpu-warm-hover) .card:not(:first-child) .icon {
   transform: scale(0.94);
   opacity: 0.75;
 }
 
 .card:hover .light,
-.card:focus-visible .light {
+.card:focus-visible .light,
+:global(.gpu-warm-hover) .card:first-child .light {
   opacity: 1;
 }
 
