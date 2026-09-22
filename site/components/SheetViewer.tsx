@@ -34,10 +34,12 @@ const ZOOM_STEP = 1.6;
 const ZOOM_DOUBLE = 2.5;
 const ZOOM_TAU = 70;
 /** Открытие и закрытие: перелёт листа с его места на странице в центр экрана. */
-const OPEN_MS = 560;
-const CLOSE_MS = 440;
+const OPEN_MS = 680;
+const CLOSE_MS = 620;
 const OPEN_EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
-const CLOSE_EASE = "cubic-bezier(0.4, 0, 0.2, 1)";
+const CLOSE_EASE = "cubic-bezier(0.32, 0.72, 0, 1)";
+/** Доля перелёта при закрытии, за которую миниатюра проявляется под летящим листом. */
+const LAND_REVEAL = 0.5;
 
 /**
  * Полный размер листа — заранее, по наведению на миниатюру: к нажатию файл уже
@@ -109,7 +111,9 @@ export default function SheetViewer({ items, index, onIndexChange, onClose, proj
       z.ts = s;
       z.tx = Math.min(mx, Math.max(-mx, x));
       z.ty = Math.min(my, Math.max(-my, y));
-      setZoomed(s > 1.001);
+      // Обрезка по области листа снимается только после того, как лист вернулся к
+      // исходному масштабу, — иначе при отдалении он наезжает на строку с подписью
+      if (s > 1.001 || instant) setZoomed(s > 1.001);
       if (instant) {
         cancelAnimationFrame(z.raf);
         z.raf = 0;
@@ -134,6 +138,7 @@ export default function SheetViewer({ items, index, onIndexChange, onClose, proj
           z.y = z.ty;
         }
         applyZoom();
+        if (done && z.s <= 1.001) setZoomed(false);
         z.raf = done ? 0 : requestAnimationFrame(tick);
       };
       z.raf = requestAnimationFrame(tick);
@@ -171,6 +176,20 @@ export default function SheetViewer({ items, index, onIndexChange, onClose, proj
     return `translate(${r.left + r.width / 2 - cx}px, ${r.top + r.height / 2 - cy}px) scale(${r.width / w}, ${r.height / h})`;
   }, []);
 
+  // Миниатюра, из которой вылетел лист, прячется, пока он открыт: иначе за летящим
+  // листом видна его копия на месте (просьба заказчика)
+  const hiddenOrigin = useRef<HTMLElement | null>(null);
+  const hideOrigin = useCallback((el: HTMLElement | null | undefined) => {
+    if (hiddenOrigin.current === el) return;
+    if (hiddenOrigin.current) hiddenOrigin.current.style.visibility = "";
+    hiddenOrigin.current = el ?? null;
+    if (el) el.style.visibility = "hidden";
+  }, []);
+  useEffect(() => {
+    if (index !== null && !closing.current) hideOrigin(origin?.(index));
+  }, [index, origin, hideOrigin]);
+  useEffect(() => () => hideOrigin(null), [hideOrigin]);
+
   const fadeParts = () => Array.from(dialogRef.current?.querySelectorAll<HTMLElement>("[data-fade]") ?? []);
 
   // Открытие: до первой отрисовки, чтобы лист не мелькнул в центре раньше перелёта
@@ -190,6 +209,7 @@ export default function SheetViewer({ items, index, onIndexChange, onClose, proj
     wasOpen.current = true;
     if (reducedMotion()) return;
     const from = visibleRect(origin?.(index!));
+    hideOrigin(origin?.(index!));
     setFlying(true);
     img
       .animate(
@@ -205,21 +225,22 @@ export default function SheetViewer({ items, index, onIndexChange, onClose, proj
       { duration: OPEN_MS * 0.8, easing: "ease", pseudoElement: "::backdrop" },
     );
     fadeParts().forEach((el) =>
-      el.animate({ opacity: [0, 1] }, { duration: 300, delay: OPEN_MS * 0.45, easing: "ease", fill: "backwards" }),
+      el.animate({ opacity: [0, 1] }, { duration: 360, delay: OPEN_MS * 0.5, easing: "ease", fill: "backwards" }),
     );
     // index намеренно не в зависимостях: анимация — только при открытии, не при смене листа
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, origin, flyTo]);
+  }, [isOpen, origin, flyTo, hideOrigin]);
 
   const finishClose = useCallback(() => {
     const dlg = dialogRef.current;
+    hideOrigin(null);
     if (dlg?.open) dlg.close();
     delete document.documentElement.dataset.sheetViewer;
     wasOpen.current = false;
     closing.current = false;
     onClose();
     prevFocus.current?.focus({ preventScroll: true });
-  }, [onClose]);
+  }, [onClose, hideOrigin]);
 
   /** Закрытие с обратным перелётом в миниатюру (или растворением, если её не видно). */
   const close = useCallback(() => {
@@ -236,7 +257,8 @@ export default function SheetViewer({ items, index, onIndexChange, onClose, proj
     img.getAnimations().forEach((a) => a.cancel());
     const anim = img.animate(
       to
-        ? [{ transform: start }, { transform: flyTo(to), borderRadius: "14px" }]
+        ? // тень просмотра к миниатюре гаснет — иначе у приземлившегося листа тёмный ореол, пока его не сменит миниатюра
+          [{ transform: start }, { transform: flyTo(to), borderRadius: "14px", boxShadow: "0 0 0 transparent" }]
         : [{ transform: start, opacity: 1 }, { transform: `${start === "none" ? "" : start} scale(0.94)`, opacity: 0 }],
       { duration: to ? CLOSE_MS : 280, easing: CLOSE_EASE, fill: "forwards" },
     );
@@ -244,7 +266,19 @@ export default function SheetViewer({ items, index, onIndexChange, onClose, proj
       { opacity: [1, 0] },
       { duration: CLOSE_MS, easing: "ease", pseudoElement: "::backdrop", fill: "forwards" },
     );
-    fadeParts().forEach((el) => el.animate({ opacity: [1, 0] }, { duration: 180, easing: "ease", fill: "forwards" }));
+    fadeParts().forEach((el) => el.animate({ opacity: [1, 0] }, { duration: 220, easing: "ease", fill: "forwards" }));
+    // Миниатюра (со своей стеклянной кромкой и тенью) проявляется под летящим листом во второй
+    // половине перелёта, сам лист до конца непрозрачный: к посадке под ним уже та же картинка
+    // с рамкой, и подмена не видна. Растворять лист после посадки нельзя — оба полупрозрачны,
+    // и картинка «тухнет»
+    const el = to ? hiddenOrigin.current : null;
+    if (el) {
+      el.style.visibility = "";
+      el.animate(
+        { opacity: [0, 1] },
+        { duration: CLOSE_MS * LAND_REVEAL, delay: CLOSE_MS * (1 - LAND_REVEAL), easing: "ease", fill: "backwards" },
+      );
+    }
     anim.onfinish = finishClose;
   }, [index, origin, flyTo, finishClose]);
 
@@ -422,7 +456,9 @@ export default function SheetViewer({ items, index, onIndexChange, onClose, proj
               }}
               width={current.width}
               height={current.height}
-              alt={current.alt}
+              // Пустой alt: пока грузится полный лист, браузер рисовал поверх
+              // подложки значок и текст alt (название уже есть в подписи над листом)
+              alt=""
               className={styles.sheet}
               // Лист 3000 px декодируется 60–80 мс: синхронно это кадр посреди перелёта
               // (и первого приближения). Пока он готовится, видна миниатюра-подложка

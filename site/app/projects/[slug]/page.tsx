@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import ProjectCover from "@/components/ProjectCover";
 import ProjectModel from "@/components/ProjectModel";
 import SheetGallery from "@/components/SheetGallery";
+import NeighbourCascade from "@/components/NeighbourCascade";
 import ScreenDownCta from "@/components/ScreenDownCta";
 import { NAV, PageSheet, ProjectIcon } from "@/components/SheetTransition";
 import { getProject, getProjectNeighbours, getProjects, getSite } from "@/lib/content";
@@ -56,7 +57,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
     <PageSheet kind="project">
       <main className={styles.page} style={palette}>
         <div className={`${styles.screen} ${styles.screen1}`} data-screen>
-          <header className={`${styles.top} container`}>
+          <header className={`${styles.top} container`} data-cascade-item style={{ ["--ci" as string]: 0 }}>
             <Link href="/#projects" transitionTypes={NAV.close} data-nav="proj-close" className={styles.back}>
               <span aria-hidden="true">←</span> Портфолио
             </Link>
@@ -77,7 +78,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
           <div className={`${styles.firstScreen} container`}>
             <section className={styles.hero}>
               {/* Иконка проекта; поверх неё после перехода — 3D-макет (ProjectModel) */}
-              <div className={styles.coverStage}>
+              <div className={styles.coverStage} data-cascade-item style={{ ["--ci" as string]: 1 }}>
                 <ProjectIcon slug={project.slug}>
                   <div className={`${styles.cover} rise`}>
                     <Image src={project.icon.dark} alt="" fill priority sizes="(max-width: 760px) 100vw, 320px" />
@@ -93,7 +94,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
                     .map((p) => ({ slug: p.slug, icon: p.icon.dark, ink: p.palette.ink, bg: p.palette.bg }))}
                 />
               </div>
-              <div className={`${styles.heroText} rise rise-2`}>
+              <div className={`${styles.heroText} rise rise-2`} data-cascade-item style={{ ["--ci" as string]: 2 }}>
                 <div className="kicker">Проект · {project.kind}</div>
                 <h1 className="h1">{project.title}</h1>
                 <p className="lead">{project.description}</p>
@@ -118,7 +119,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
               </div>
             </section>
 
-            <section className={styles.sheetsSection} aria-label="Листы проекта" data-sheets-panel>
+            <section className={styles.sheetsSection} aria-label="Листы проекта" data-sheets-panel data-cascade-item style={{ ["--ci" as string]: 3 }}>
               {!project.underConstruction && (
                 <p className={`${styles.sheetsHint} rise`}>
                   (крутите колесо над лентой, чтобы листать; нажмите на лист, чтобы открыть его во весь экран)
@@ -147,6 +148,7 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
           style={project.cover ? { ["--cover-ratio" as string]: project.cover.width / project.cover.height } : undefined}
         >
           <div className={`${styles.board} container`}>
+            <div className={styles.posterWrap} data-cascade-item style={{ ["--ci" as string]: 4 }}>
             {project.cover && (
               <ProjectCover
                 cover={project.cover}
@@ -154,8 +156,9 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
                 className={`${styles.poster} rise`}
               />
             )}
+            </div>
 
-            <nav className={styles.neighbours} aria-label="Другие проекты">
+            <nav className={styles.neighbours} aria-label="Другие проекты" data-cascade-item style={{ ["--ci" as string]: 5 }}>
               {prev ? (
                 <Link href={`/projects/${prev.slug}`} transitionTypes={NAV.prev} data-nav="proj-prev" className={`${styles.neighbour} rise`}>
                   <span className={styles.neighbourKicker}>← Предыдущий проект</span>
@@ -185,7 +188,8 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
             </nav>
           </div>
         </section>
-        <ScreenDownCta label="Планшет проекта" />
+        <NeighbourCascade />
+        <ScreenDownCta label="Планшет проекта" upCta={slug === "tower"} />
       </main>
     </PageSheet>
   );

@@ -66,7 +66,13 @@ export default function ViewTransitionScroll() {
           if (grow) body.style.minHeight = `${top + window.innerHeight * 2}px`;
           window.scrollTo({ top, behavior: "instant" });
           try {
-            return await update();
+            const result = await update();
+            // Экраны главной бывают выше окна — доводим точно до раздела «Проекты»
+            if (types.includes("proj-close")) {
+              const el = document.getElementById("projects");
+              if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY, behavior: "instant" });
+            }
+            return result;
           } finally {
             if (grow) body.style.minHeight = prevMin;
           }

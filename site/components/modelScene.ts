@@ -834,9 +834,15 @@ async function build({ slug, icon, ink, bg }: ModelSource, pause: Pause, backgro
       furn: std(mix(bgColor, white, 0.35)),
       // Интерьер квартиры (scripts/make-flat-ifc.py): отделка-плитка, мягкая мебель, сантехника
       tile: std(mix(bgColor, inkColor, 0.7)),
+      // Экраны телевизоров — почти чёрное стекло (просьба заказчика: не коричневый)
+      screen: std(new Color("#141416"), { roughness: 0.25, metalness: 0.2 }),
       fabric: std(mix(bgColor, inkColor, 0.85), { roughness: 0.9 }),
       white: std(mix(inkColor, white, 0.8), { roughness: 0.4 }),
+      // Навес на кровле башни — белый, как на рендере (просьба заказчика)
+      canopy: std(mix(inkColor, white, 0.8), { roughness: 0.4 }),
       wood: std(new Color("#b39373").lerp(inkColor, 0.25)),
+      // Стулья квартиры — как fabric, но сглаженные (нормали считаются при загрузке)
+      chair: std(mix(bgColor, inkColor, 0.85), { roughness: 0.9, flatShading: false }),
       rail: std(new Color("#b39373").lerp(white, 0.15), { roughness: 0.7 }),
       accent: std(accent),
       seat: std(new Color("#c2528f")),
@@ -893,6 +899,7 @@ async function build({ slug, icon, ink, bg }: ModelSource, pause: Pause, backgro
         continue;
       }
       m.material = mats[key] ?? mats.wall;
+      if (key === "chair") m.geometry.computeVertexNormals();
       // Стекло не отбрасывает тень, чтобы интерьер не тонул в темноте
       m.castShadow = key !== "glass" && key !== "pane";
       m.receiveShadow = true;
@@ -955,6 +962,7 @@ async function build({ slug, icon, ink, bg }: ModelSource, pause: Pause, backgro
     applyLines();
   };
   const reset = () => {
+    building.position.set(0, 0, 0);
     clip.constant = -0.001;
     scan.position.y = 0;
     scanMat.opacity = 0;

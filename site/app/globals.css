@@ -424,41 +424,44 @@ button {
   }
 }
 
-/* Соседний проект: лист уезжает в сторону, новый въезжает с другой. */
+/* Соседний проект — каскадом: старая страница гаснет со сдвигом, снимок новой
+   проявляется сразу, а её блоки по очереди въезжают со стороны листания
+   (NeighbourCascade ставит data-cascade на <main>). */
 ::view-transition-old(.sheet-to-left) {
-  animation: vt-to-left 650ms var(--vt-ease) both;
+  animation: vt-to-left 420ms var(--vt-ease) both;
 }
 ::view-transition-old(.sheet-to-right) {
-  animation: vt-to-right 650ms var(--vt-ease) both;
+  animation: vt-to-right 420ms var(--vt-ease) both;
 }
-::view-transition-new(.sheet-from-right) {
-  animation: vt-from-right 800ms var(--vt-ease) 120ms both;
-}
+::view-transition-new(.sheet-from-right),
 ::view-transition-new(.sheet-from-left) {
-  animation: vt-from-left 800ms var(--vt-ease) 120ms both;
+  animation: none;
 }
 @keyframes vt-to-left {
   to {
     opacity: 0;
-    transform: translateX(-12%) rotate(-2deg) scale(0.92);
+    transform: translateX(-4%);
   }
 }
 @keyframes vt-to-right {
   to {
     opacity: 0;
-    transform: translateX(12%) rotate(2deg) scale(0.92);
+    transform: translateX(4%);
   }
 }
-@keyframes vt-from-right {
-  from {
-    opacity: 0;
-    transform: translateX(14%) rotate(2deg) scale(0.94);
-  }
+main[data-cascade] [data-cascade-item] {
+  animation: cascade-in 700ms var(--ease-out) calc(160ms + var(--ci, 0) * 110ms) both;
 }
-@keyframes vt-from-left {
+main[data-cascade="next"] [data-cascade-item] {
+  --cascade-x: 48px;
+}
+main[data-cascade="prev"] [data-cascade-item] {
+  --cascade-x: -48px;
+}
+@keyframes cascade-in {
   from {
     opacity: 0;
-    transform: translateX(-14%) rotate(-2deg) scale(0.94);
+    transform: translateX(var(--cascade-x, 0));
   }
 }
 

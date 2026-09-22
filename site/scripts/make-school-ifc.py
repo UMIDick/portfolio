@@ -72,6 +72,21 @@ OPENING_DEPTH = 2.0
 # (Revit id → сдвиг вверх, м) и прорезаем под них наружную стену и облицовку.
 ADD_WINDOWS = {"458076": 4.2, "458010": 4.2, "432641": 4.2}
 WALLS = ("IfcWall", "IfcWallStandardCase")
+# Техоборудование на кровле: в IFC его нет, а на чертежах (фасад 2, взрыв-схема
+# листа 11) есть — ставим коробками, как в ручном макете (make-school-model.mjs).
+# x0, x1, z0, z1 — метры плана; высота — над кровлей под коробкой (там было 17.0).
+ROOF_BOXES = [
+    (40.0, 49.8, 6.0, 9.0, 2.2),
+    (30.0, 33.3, 3.0, 6.0, 2.21),
+    (28.0, 29.9, 9.0, 11.0, 2.0),
+    (16.4, 27.7, 4.0, 7.5, 3.11),
+    (8.6, 18.5, 10.8, 13.4, 1.9),
+    (2.7, 5.8, 2.0, 4.0, 2.0),
+    (34.5, 36.3, 10.5, 12.3, 1.8),
+    (36.6, 38.4, 10.5, 12.3, 1.8),
+    (38.7, 40.5, 10.5, 12.3, 1.8),
+    (0.6, 2.4, 9.0, 12.0, 3.41),
+]
 
 
 def is_glass(rgb, transparency):
@@ -302,6 +317,69 @@ def cut_opening(v, tri, mids, ov):
         tl = ((v - c) @ A.T)[tri]
     return v, tri, mids
 
+def remove_coincident(pieces, skip=(), ang=20, tol=0.015):
+    """Совпадающие грани разных элементов («второй слой»): торец плиты в плоскости фасада,
+    накладка на стене и т.п. — лежат в одной плоскости, смотрят в одну сторону и мерцают
+    друг сквозь друга. Грань меньшего элемента выбрасывается, если её центр лежит на грани
+    большего. pieces — [(материал, вершины, треугольники)]; материалы из skip (стекло) не
+    трогаются. Возвращает (новые списки треугольников, сколько убрано)."""
+    import shapely
+
+    rows = []
+    for pi, (mat, v, tri) in enumerate(pieces):
+        if mat in skip or not len(tri):
+            continue
+        p = v[tri]
+        n = np.cross(p[:, 1] - p[:, 0], p[:, 2] - p[:, 0])
+        a = np.linalg.norm(n, axis=1)
+        ok = a > 1e-10
+        idx = np.nonzero(ok)[0]
+        rows.append((pi, idx, n[ok] / a[ok, None], p[ok]))
+    if not rows:
+        return [t for _, _, t in pieces], 0
+    part = np.concatenate([np.full(len(i), pi) for pi, i, _, _ in rows])
+    tid = np.concatenate([i for _, i, _, _ in rows])
+    nrm = np.concatenate([n for *_, n, _ in rows])
+    P = np.concatenate([p for *_, p in rows])
+    d = np.einsum("ij,ij->i", nrm, P[:, 0])
+    tri_area = np.linalg.norm(np.cross(P[:, 1] - P[:, 0], P[:, 2] - P[:, 0]), axis=1) / 2
+    area_arr = np.zeros(len(pieces))
+    np.add.at(area_arr, part, tri_area)
+    drop = np.zeros(len(part), bool)
+    qn = np.round(nrm * ang).astype(np.int64)
+    for shift in (0.0, 0.5):
+        key = np.column_stack([qn, np.floor(d / tol + shift).astype(np.int64)])
+        _, g = np.unique(key, axis=0, return_inverse=True)
+        g = g.ravel()
+        order = np.argsort(g, kind="stable")
+        bounds = np.flatnonzero(np.diff(g[order])) + 1
+        for grp in np.split(order, bounds):
+            if len(grp) < 2 or (part[grp] == part[grp[0]]).all():
+                continue  # в плоскости один элемент
+            sel = grp[~drop[grp]]
+            if not len(sel):
+                continue
+            ax = np.argmax(np.abs(nrm[sel[0]]))
+            keep2 = [i for i in range(3) if i != ax]
+            owners = sorted(set(part[sel].tolist()), key=lambda q: -area_arr[q])
+            polys = []
+            for q in owners:
+                s = sel[part[sel] == q]
+                tri2 = P[s][:, :, keep2]
+                if polys:
+                    u = shapely.union_all(polys)
+                    c = tri2.mean(1)
+                    hit = shapely.contains_xy(u, c[:, 0], c[:, 1])
+                    drop[s[hit]] = True
+                    s, tri2 = s[~hit], tri2[~hit]
+                polys.extend(shapely.polygons(tri2))
+    out = [t for _, _, t in pieces]
+    for pi in set(part[drop]):
+        m = drop & (part == pi)
+        out[pi] = np.delete(pieces[pi][2], tid[m], axis=0)
+    return out, int(drop.sum())
+
+
 
 def simplify(v, tri, grid):
     """Кластеризация вершин по сетке + удаление вырожденных и повторных треугольников."""
@@ -316,8 +394,11 @@ def simplify(v, tri, grid):
     t = inv[tri]
     ok = (t[:, 0] != t[:, 1]) & (t[:, 1] != t[:, 2]) & (t[:, 0] != t[:, 2])
     t = t[ok]
-    # Одинаковые треугольники (в любом порядке обхода) — оставляем один
-    _, first = np.unique(np.sort(t, axis=1), axis=0, return_index=True)
+    # Одинаковые треугольники — оставляем один; обратный обход — другая сторона
+    # (двусторонний навес башни), его не трогаем: сдвиг по кругу, минимальный индекс первым
+    r = np.argmin(t, axis=1)[:, None]
+    canon = np.take_along_axis(t, (r + np.arange(3)) % 3, axis=1)
+    _, first = np.unique(canon, axis=0, return_index=True)
     t = t[np.sort(first)]
     used, t = np.unique(t, return_inverse=True)
     return nv[used], t.reshape(-1, 3)
@@ -474,6 +555,10 @@ def main():
         if keep.any()
     ]
 
+    tris, n_co = remove_coincident([(m, v, t) for _, m, v, t in parts], skip=("glass",))
+    parts = [(c, m, v, t) for (c, m, v, _), t in zip(parts, tris) if len(t)]
+    print(f"school (IFC): совпадающих граней убрано {n_co}")
+
     # ── Корзины ──
     buckets = {}
     for cls, mat, v, tri in parts:
@@ -502,6 +587,30 @@ def main():
             e = feature_edges(v, t, EDGE_ANGLE)
             edge_segs.append(v[e])
         meshes.append((mat, 4, to_card(v), t))
+    # ── Коробки техоборудования на кровле ──
+    roof = np.concatenate([to_plan(v[t]) for cls, _, v, t in parts if cls in ("IfcSlab", "IfcRoof")])
+    bv, bt = [], []
+    for x0, x1, z0, z1, h in ROOF_BOXES:
+        # Высота кровли — по треугольникам плит над центром коробки
+        px, pz = (x0 + x1) / 2, (z0 + z1) / 2
+        a, b, d = roof[:, 0], roof[:, 1], roof[:, 2]
+        cross = lambda p, q: (q[:, 0] - p[:, 0]) * (pz - p[:, 2]) - (q[:, 2] - p[:, 2]) * (px - p[:, 0])
+        w = np.stack([cross(a, b), cross(b, d), cross(d, a)], 1)
+        m = (w >= 0).all(1) | (w <= 0).all(1)
+        if not m.any():
+            print(f"  коробка {x0}..{x1} × {z0}..{z1}: кровли нет, пропущена")
+            continue
+        y0 = roof[m][:, :, 1].max()
+        print(f"  коробка {x0}..{x1} × {z0}..{z1}: кровля {y0:.2f} м")
+        box = np.array([[x, y, z] for y in (y0, y0 + h) for z in (z0, z1) for x in (x0, x1)])
+        f = np.array([[0, 1, 3], [0, 3, 2], [4, 6, 7], [4, 7, 5], [0, 4, 5], [0, 5, 1],
+                      [2, 3, 7], [2, 7, 6], [0, 2, 6], [0, 6, 4], [1, 5, 7], [1, 7, 3]])
+        bt.append(f + 8 * len(bv))
+        bv.append(box)
+    if bv:
+        v, t = np.concatenate(bv), np.concatenate(bt)
+        edge_segs.append(v[feature_edges(v, t, EDGE_ANGLE)])
+        meshes.append(("roofbox", 4, to_card(v), t))
     segs = np.concatenate(edge_segs)
     ev = segs.reshape(-1, 3)
     meshes.append(("edges", 1, to_card(ev), np.arange(len(ev)).reshape(-1, 2)))

@@ -42,8 +42,17 @@ SRC_DIR = ROOT.parent / "assets" / "revit files" / "дом повышенной 
 BLENDER = os.environ.get("BLENDER", r"C:\Program Files\Blender Foundation\Blender 5.2\blender.exe")
 # Навес в FBX — объект импортированной геометрии
 CANOPY_PREFIX = "Обозначение импорта"
+# Кровля (плоская крыша): у неё выбрасываются торцы
+ROOF_PREFIX = "Базовая крыша"
 # Грань наклонена сильнее этого (|nz|) — лист кровли навеса, иначе — стойка, балка, торец
 CANOPY_SHEET_NZ = 0.3
+# Треугольник наружного ската нижней плиты навеса, которого нет в Revit (м, координаты FBX)
+CANOPY_PATCH = [(0.557, -9.756, 39.215), (11.43, -7.256, 40.009), (0.557, -7.256, 40.009)]
+# Навес над внутренними колоннами: центры угловых колонн, верх колонн, толщина, вынос
+CANOPY_INNER_COLS = [(-4.87, -3.61), (4.93, -3.61), (0.03, 5.12)]
+CANOPY_INNER_Z = 40.21
+CANOPY_INNER_THICK = 0.15
+CANOPY_INNER_OVERHANG = 0.5
 
 
 def newest(ext, env):
@@ -118,6 +127,11 @@ def tessellate(path):
                     continue
                 rgb = tuple(m.diffuse.components) if m.diffuse else (0.8, 0.8, 0.8)
                 transp = m.transparency if m.transparency == m.transparency else 0.0
+                if name.startswith(ROOF_PREFIX):
+                    # Торец кровельной плиты лежит в плоскости фасада и парапета — они
+                    # мерцали друг сквозь друга полосой под парапетом (просьба заказчика)
+                    n = np.cross(v[sel[:, 1]] - v[sel[:, 0]], v[sel[:, 2]] - v[sel[:, 0]])
+                    sel = sel[np.abs(n[:, 2]) > 0.5 * np.linalg.norm(n, axis=1)]
                 parts.append((cls, bucket(cls, name, rgb, transp or 0.0), v, sel))
         if not it.next():
             break
@@ -179,7 +193,44 @@ def canopy():
     n = np.cross(v[tri[:, 1]] - v[tri[:, 0]], v[tri[:, 2]] - v[tri[:, 0]])
     nz = np.abs(n[:, 2]) / np.maximum(np.linalg.norm(n, axis=1), 1e-12)
     sheet = nz > CANOPY_SHEET_NZ
-    return [("Canopy", "dark", v, tri[sheet]), ("Canopy", "metal", v, tri[~sheet])]
+    fv, ft = canopy_additions()
+    return [("Canopy", "canopy", v, tri[sheet]), ("Canopy", "metal", v, tri[~sheet]), ("Canopy", "canopy", fv, ft)]
+
+
+def canopy_additions():
+    """Дополнения к навесу из FBX (просьбы заказчика): 1) недостающий в Revit треугольник
+    наружного ската нижней плиты (CANOPY_PATCH, сквозь него было видно под навес);
+    2) треугольный навес над внутренними колоннами (CANOPY_INNER_COLS, верх колонн
+    CANOPY_INNER_Z) — плита толщиной CANOPY_INNER_THICK с выносом CANOPY_INNER_OVERHANG."""
+    verts, tris = [], []
+
+    def face(pts, up):
+        pts = np.array(pts, float)
+        k = len(verts)
+        verts.extend(pts)
+        for i in range(1, len(pts) - 1):
+            f = [0, i, i + 1]
+            n = np.cross(pts[f[1]] - pts[f[0]], pts[f[2]] - pts[f[0]])
+            if np.dot(n, up) < 0:
+                f = [0, i + 1, i]
+            tris.append([k + j for j in f])
+
+    face(CANOPY_PATCH, [0, 0, 1])
+    C = np.array(CANOPY_INNER_COLS, float)
+    c = C.mean(0)
+    a, b, d = (np.linalg.norm(C[i] - C[(i + 1) % 3]) for i in range(3))
+    u, w = C[1] - C[0], C[2] - C[0]
+    area = abs(u[0] * w[1] - u[1] * w[0]) / 2
+    C = c + (C - c) * (1 + CANOPY_INNER_OVERHANG / (2 * area / (a + b + d)))
+    z0, z1 = CANOPY_INNER_Z, CANOPY_INNER_Z + CANOPY_INNER_THICK
+    face([[*p, z1] for p in C], [0, 0, 1])
+    face([[*p, z0] for p in C], [0, 0, -1])
+    for i in range(3):
+        p, q = C[i], C[(i + 1) % 3]
+        out = np.append((p + q) / 2 - c, 0)
+        face([[*p, z0], [*q, z0], [*q, z1], [*p, z1]], out)
+    return np.array(verts), np.array(tris, np.int64)
+
 
 
 def main():
@@ -207,6 +258,11 @@ def main():
         for keep in [v[tri][:, :, 2].max(1) > GROUND + 0.001]
         if keep.any()
     ]
+
+    # Совпадающие грани разных элементов мерцали (торцы плит в плоскости фасада и т.п.)
+    tris, n_co = ifc.remove_coincident([(m, v, t) for _, m, v, t in parts], skip=("glass",))
+    parts = [(c, m, v, t) for (c, m, v, _), t in zip(parts, tris) if len(t)]
+    print(f"tower (IFC): совпадающих граней убрано {n_co}")
 
     # ── Корзины ──
     buckets = {}

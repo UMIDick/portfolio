@@ -24,3 +24,6 @@ assets/revit files/**/*.fbx
 
 # остальные исходники Revit (RVT, RFA, бэкапы) — тоже не в репозиторий
 assets/revit files/
+
+# кэш Python
+__pycache__/

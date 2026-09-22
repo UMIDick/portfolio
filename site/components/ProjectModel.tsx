@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type * as T from "three";
 import { useRouter } from "next/navigation";
 import { isRecentArrival, markArrival } from "@/lib/arrival";
-import { isBusy } from "@/lib/idle";
+import { isBusy, markBusy } from "@/lib/idle";
 import type { ModelSource } from "./modelScene";
 import styles from "./ProjectModel.module.css";
 
@@ -71,6 +71,10 @@ const GLOW = 0.6;
 const LIE_START = 250;
 const LIE_TIME = 1300;
 const BUILD_START = 850;
+/** Готовое здание плавно переезжает из своего места на иконке в центр карточки
+    (и обратно перед разборкой) — просьба заказчика. */
+const CENTER_TIME = 7000;
+const UNCENTER_TIME = 600;
 
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 const easeOut = (t: number) => 1 - (1 - t) ** 3;
@@ -130,24 +134,48 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
       stage.dataset.model = "off";
       delete root.dataset.live;
     };
-    const leaveToHome = async (href: string, fromHistory: boolean) => {
+    // Кнопка «домой» внизу страницы: сначала страница плавно поднимается к макету
+    // (та же длительность и кривая, что у ScreenPager), потом всё как у «← Портфолио»
+    const scrollToTop = () =>
+      new Promise<void>((done) => {
+        const from = window.scrollY;
+        if (from <= 0 || reduced) {
+          window.scrollTo({ top: 0, behavior: "instant" });
+          return done();
+        }
+        const start = performance.now();
+        markBusy(start + 1100);
+        const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+        const tick = (now: number) => {
+          const t = Math.min((now - start) / 1000, 1);
+          window.scrollTo({ top: from * (1 - ease(t)), behavior: "instant" });
+          if (t < 1) requestAnimationFrame(tick);
+          else done();
+        };
+        requestAnimationFrame(tick);
+      });
+    const leaveToHome = async (href: string, fromHistory: boolean, type = "proj-close", toTop = false) => {
       leaving = true;
-      markArrival("proj-close");
+      if (toTop) await scrollToTop();
       if (reverse) await reverse();
       hideModel();
+      // Отметку ставим после разборки — иначе к приходу на страницу она устареет
+      markArrival(type);
       // Кадр на отрисовку плоской картинки — её снимет переход
       await new Promise((r) => requestAnimationFrame(() => r(null)));
-      if (fromHistory) router.replace(href, { scroll: false, transitionTypes: ["proj-close"] });
-      else router.push(href, { transitionTypes: ["proj-close"] });
+      if (fromHistory) router.replace(href, { scroll: false, transitionTypes: [type] });
+      else router.push(href, { transitionTypes: [type] });
     };
     const onNavClick = (e: MouseEvent) => {
       const link = (e.target as Element | null)?.closest?.("a[data-nav]");
       if (!link || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      if (link.getAttribute("data-nav") === "proj-close") {
+      const nav = link.getAttribute("data-nav") ?? "";
+      // На главную и к соседнему проекту — сначала обратная анимация макета
+      if (nav === "proj-close" || nav === "proj-next" || nav === "proj-prev") {
         // Не даём Link уйти сразу
         e.preventDefault();
         e.stopPropagation();
-        if (!leaving) void leaveToHome(link.getAttribute("href") ?? "/", false);
+        if (!leaving) void leaveToHome(link.getAttribute("href") ?? "/", false, nav, link.hasAttribute("data-scroll-top"));
       } else hideModel();
     };
     // Кнопка «Назад»: адрес уже сменился на главную — перехватываем до роутера Next
@@ -254,6 +282,21 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
       // Сверху: 1 единица сцены = стороне карточки в пикселях — картинка и 3D совпадают
       const topRadius = (h: number, f: Frame) => h / f.size / (2 * tanHalf);
 
+      // Сдвиг, ставящий здание центром (по габаритам самой геометрии) в центр карточки
+      building.position.set(0, 0, 0);
+      building.updateMatrixWorld(true);
+      const bbox = new THREE.Box3().setFromObject(building);
+      const centerShift = bbox.isEmpty()
+        ? new Vector3()
+        : new Vector3(-(bbox.min.x + bbox.max.x) / 2, 0, -(bbox.min.z + bbox.max.z) / 2);
+      let centerK = 0;
+      let centerFrom = 0;
+      const setCenter = (k: number) => {
+        centerK = k;
+        building.position.copy(centerShift).multiplyScalar(k);
+        renderer.shadowMap.needsUpdate = true;
+      };
+
       // В конце: тот же масштаб карточки; камера отходит, только если здание не влезает
       // Верх здания для вписывания: контур перекрытия (точнее габаритов плана)
       const fitRadius = (w: number, h: number, f: Frame, margin: number) => {
@@ -267,6 +310,10 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
             [0.5, -mod.CARD_DEPTH, 0.5],
           ].map(([x, y, z]) => ({ p: new Vector3(x, y, z), lim: 0.99 * margin })),
           ...roofOutline.map(([x, z]) => ({ p: new Vector3(x, totalH, z), lim: 0.95 * margin })),
+          // Здание после переезда в центр тоже должно влезать
+          ...(bbox.isEmpty() ? [] : [[bbox.min.x, bbox.min.z], [bbox.max.x, bbox.min.z], [bbox.min.x, bbox.max.z], [bbox.max.x, bbox.max.z]]).map(
+            ([x, z]) => ({ p: new Vector3(x, totalH, z).add(centerShift), lim: 0.95 * margin }),
+          ),
         ];
         const probe = new THREE.PerspectiveCamera(FOV, w / h, NEAR, FAR);
         applyOffset(probe, w, h, f);
@@ -686,6 +733,8 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
         // Здание готово — срез больше не виден, изнанку можно не рисовать
         setCutaway(false);
         placeCamera(camera, finalPose);
+        centerFrom = reduced ? 0 : performance.now();
+        if (reduced) setCenter(1);
         if (finePointer) controls = makeControls(hit);
         setInteractive(true);
         // Соседние проекты — в фоне, чтобы переход к ним тоже был плавным: сразу, если макет
@@ -701,7 +750,7 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
       const OUTRO_UNBUILD = 750;
       const OUTRO_CAMERA = 900;
       const OUTRO_TOTAL = 1250;
-      let outro: { start: number; from: Pose; h0: number; done: () => void } | null = null;
+      let outro: { start: number; from: Pose; h0: number; c0: number; done: () => void } | null = null;
 
       const playOutro = () =>
         new Promise<void>((resolve) => {
@@ -714,7 +763,8 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
           const h0 = phase === "intro" ? Math.max(0, clip.constant) : totalH;
 
           phase = "outro";
-          outro = { start: performance.now(), from: { radius: s.radius, polar: s.phi, azimuth }, h0, done: resolve };
+          centerFrom = 0;
+          outro = { start: performance.now(), from: { radius: s.radius, polar: s.phi, azimuth }, h0, c0: centerK, done: resolve };
         });
 
       const html = document.documentElement;
@@ -763,6 +813,12 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
           setLineFade(reduced ? 1 : easeInOut(clamp01((t - LIE_START - LIE_TIME * 0.35) / (LIE_TIME * 0.65 + buildTime * 0.5))));
           if (lie >= 1 && b >= 1) finishIntro();
         } else if (phase === "idle") {
+          if (centerFrom) {
+            const k = clamp01((now - centerFrom) / CENTER_TIME);
+            setCenter(easeInOut(k));
+            if (k >= 1) centerFrom = 0;
+            dirty = true;
+          }
           if (zoomOn && !morph && !pivot.equals(panTo)) {
             const step = panTo.clone().sub(pivot);
             // Остаток меньше сотой миллиметра на карточке — встаём точно
@@ -828,6 +884,8 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
           }
         } else if (outro) {
           const o = outro;
+          // Сначала здание возвращается на своё место на иконке
+          if (centerK > 0) setCenter(o.c0 * (1 - easeInOut(clamp01((now - o.start) / UNCENTER_TIME))));
           const u = clamp01((now - o.start) / OUTRO_UNBUILD);
           const glow = u < 1 ? Math.min(1, u * 6) * (1 - easeOut(Math.max(0, (u - 0.75) / 0.25))) : 0;
           setBuild((1 - easeInOut(u)) * o.h0, glow);

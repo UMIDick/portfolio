@@ -62,6 +62,9 @@ section.section {
 
 .reveal[data-reveal="in"] .head {
   animation: pop-in 0.8s var(--ease-out) backwards;
+  /* Свой слой на время «выскакивания»: без него крупный текст шапки
+     перерастрируется при смене масштаба (и в конце анимации) — заметная запинка. */
+  will-change: transform, opacity;
 }
 
 /* Образование, опыт и языки — три равных блока в одну линию. */

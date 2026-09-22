@@ -61,16 +61,28 @@ FLOOR0 = 0.0
 # выглядели недоделанными).
 CEILING_Z = 2.3
 CEILING_CLASSES = {"IfcFlowTerminal", "IfcFlowFitting", "IfcBuildingElementProxy"}
+# Отделка стен, которая начинается выше этой отметки, — висит в воздухе, м
+FLOAT_Z = 2.5
 # Высота среза для «печати» и совмещения, м
 SCAN_Y = 1.2
 GRID = 0.01
 # Door — нарисованная входная дверь (entrance_door): детали по 6–20 мм
-GRID_SMALL = {"IfcDoor": 0.03, "IfcWindow": 0.025, "Door": 0.001}
+GRID_SMALL = {"IfcDoor": 0.03, "IfcWindow": 0.025, "Door": 0.001, "Chair": 0.002}
+CHAIRS = ("chair", "стул")
 # Верх стен, м. Витраж и перегородки из блока (Стена_монт_Блок_120) в IFC идут
 # до 3,3 м (до перекрытия) и торчали над стенами — всё обрезаем по этой отметке
 WALL_TOP = 3.0
 # Входная дверь из IFC (плоская плита без коробки) — заменяется на entrance_door()
 ENTRANCE = "дверь_глухая"
+# Стекло душевой перегородки вплотную к боку шкафа и стене (перекрыто целиком) —
+# мерцало поверх них (просьба заказчика)
+DROP_IDS = {"5345327"}
+TV_FLIP = "тв*65"
+# Унитаз из IFC (Roca Hall) — оболочка без толщины, после упрощения рвётся на
+# куски; заменяется нарисованным toilet() на том же месте
+TOILET = "унитаз"
+# Кровать: подушки у изголовья (просьба заказчика)
+BED = "кровать двуспальная"
 # Куски мельче (ручки, петли, крепёж) у этих классов отбрасываются, м
 MIN_PIECE = {"IfcDoor": 0.12, "IfcWindow": 0.12, "IfcFurnishingElement": 0.05, "IfcFlowTerminal": 0.05}
 EDGE_ANGLE = 30
@@ -113,6 +125,14 @@ def bucket(cls, name, rgb, transparency):
             return "metal" if "смесител" in n else "white"
         return "metal"
     if cls == "IfcFurnishingElement":
+        if "фасады универсальные" in n:
+            # Двери шкафов: в IFC полупрозрачные поверх корпуса — текстуры рябили; непрозрачные,
+            # с рёбрами по контуру каждой двери (просьба заказчика)
+            return "furn"
+        if n.startswith("тв_"):
+            return "screen"  # телевизоры: в IFC без материала, серые сливались со стеной (просьба заказчика)
+        if "мебель 8" in n:
+            return "fabric"  # пуф в IFC полупрозрачный (просьба заказчика: сделать непрозрачным)
         if transparency > 0.2:
             return "glass"
         if lum < 0.2:
@@ -146,6 +166,8 @@ def tessellate(path):
         name = getattr(el, "ObjectType", None) or el.Name or ""
         c = (v.min(0) + v.max(0)) / 2 if len(v) else np.zeros(3)
         ceiling = cls in CEILING_CLASSES and v[:, 2].min() >= FLOOR0 + CEILING_Z if len(v) else False
+        if name.rsplit(":", 1)[-1] in DROP_IDS:
+            ceiling = True
         if cls not in SKIP and len(v) and x0 < c[0] < x1 and y0 < c[1] < y1 and not ceiling:
             tri = np.asarray(g.faces, dtype=np.int64).reshape(-1, 3)
             mids = np.asarray(g.material_ids, dtype=np.int64)
@@ -156,6 +178,10 @@ def tessellate(path):
                 rgb = tuple(m.diffuse.components) if m.diffuse else (0.8, 0.8, 0.8)
                 transp = m.transparency if m.transparency == m.transparency else 0.0
                 mat = bucket(cls, name, rgb, transp or 0.0)
+                # Отделка короба над кухней (ОС2/ОС3, низ на 2,6 м) без самого короба
+                # висела в воздухе коричневой полосой (просьба заказчика)
+                if mat == "tile" and cls in WALLS and v[np.unique(sel), 2].min() >= FLOOR0 + FLOAT_Z:
+                    continue
                 if mat:
                     parts.append((cls, name, mat, v, sel))
         if not it.next():
@@ -242,6 +268,62 @@ def entrance_door(x0, x1, y_out, y_in, h):
     add("metal", hx - 0.012, hx + 0.012, ly0 - 0.016, ly0, 1.2, 1.26)
     add("metal", lx0, lx1, fy0, fy1, 0.0, 0.012)  # порог
     return out
+
+
+def loft(rings):
+    """Замкнутое тело по кольцам одинаковой длины [(N,3)…] снизу вверх, с крышками."""
+    n = len(rings[0])
+    v = np.concatenate(rings + [r.mean(0, keepdims=True) for r in (rings[0], rings[-1])])
+    b, top = len(v) - 2, len(v) - 1
+    t = []
+    for k in range(len(rings) - 1):
+        for i in range(n):
+            a0, a1 = k * n + i, k * n + (i + 1) % n
+            t += [(a0, a1, a1 + n), (a0, a1 + n, a0 + n)]
+    last = (len(rings) - 1) * n
+    for i in range(n):
+        t += [(b, (i + 1) % n, i), (top, last + i, last + (i + 1) % n)]
+    t = np.array(t)
+    nrm = np.cross(v[t[:, 1]] - v[t[:, 0]], v[t[:, 2]] - v[t[:, 0]])
+    c = v[:-2].mean(0)
+    flip = np.einsum("ij,ij->i", nrm, v[t].mean(1) - c) < 0
+    t[flip] = t[flip][:, ::-1]
+    return v, t
+
+
+def toilet(x0, x1, y_wall, y_front, z_top):
+    """Подвесной унитаз: чаша в плане «D» (прямая спинка у стены, овальный нос),
+    сужается книзу, сверху сиденье с закрытой крышкой. [(материал, v, t)]"""
+    cx, w = (x0 + x1) / 2, (x1 - x0) / 2
+    r = min(w * 1.1, (y_front - y_wall) * 0.6)  # полуось носа
+    yb = y_front - r
+
+    def outline(sx, sy, z):
+        pts = [(cx - w * sx, y_wall), (cx - w * sx, y_wall + (yb - y_wall) * 0.5)]
+        for a in np.linspace(np.pi, 0, 17):
+            pts.append((cx + w * sx * np.cos(a), y_wall + (yb - y_wall) + r * sy * np.sin(a)))
+        pts += [(cx + w * sx, y_wall + (yb - y_wall) * 0.5), (cx + w * sx, y_wall)]
+        # равномерно по длине, чтобы кольца совпадали по числу точек
+        return np.array([(x, y, z) for x, y in pts])
+
+    zb = z_top - 0.36  # низ чаши
+    body = [outline(0.55, 0.55, zb), outline(0.8, 0.8, zb + 0.08), outline(0.95, 0.95, zb + 0.2),
+            outline(1.0, 1.0, z_top - 0.05)]
+    seat = [outline(1.0, 1.0, z_top - 0.045), outline(0.98, 0.98, z_top - 0.015), outline(0.93, 0.93, z_top)]
+    return [("white", *loft(body)), ("white", *loft(seat))]
+
+
+def pillow(cx, cy, hx, hy, hz, z0, n=24, m=8):
+    """Подушка: сверхэллипсоид (плоский, со скруглёнными краями), низ на z0."""
+    e = 0.35  # <1 — ближе к прямоугольнику
+    sg = lambda c: np.sign(c) * np.abs(c) ** e
+    rings = []
+    for j in np.linspace(-np.pi / 2 + 0.15, np.pi / 2 - 0.15, m):
+        a = np.linspace(0, 2 * np.pi, n, endpoint=False)
+        rings.append(np.column_stack([cx + hx * sg(np.cos(j)) * sg(np.cos(a)),
+                                      cy + hy * sg(np.cos(j)) * sg(np.sin(a)),
+                                      np.full(n, z0 + hz + hz * sg(np.sin(j)))]))
+    return loft(rings)
 
 
 def remove_internal(simple, mats):
@@ -370,6 +452,56 @@ def seam_filter(v, t, e, surf, eps=0.008, tol=0.004):
     return e[~seam]
 
 
+def hide_behind_facades(parts, gap=0.04, tol=0.02):
+    """Грани корпусов шкафов, закрытые дверями («Фасады универсальные»): дверь в 1–2 см
+    перед корпусом, при таком масштабе поверхности мерцали полосами — грань убираем."""
+    rects = []  # (ось, плоскость спереди, знак нормали наружу, мин, макс)
+    for cls, name, mat, v, tri in parts:
+        if "фасады универсальные" not in name.lower():
+            continue
+        p = v[np.unique(tri)]
+        lo, hi = p.min(0), p.max(0)
+        ax = int(np.argmin((hi - lo)[:2]))
+        rects.append((ax, lo, hi))
+    if not rects:
+        return parts, 0
+    out, removed = [], 0
+    for cls, name, mat, v, tri in parts:
+        if cls != "IfcFurnishingElement" or "фасады универсальные" in name.lower() or mat == "screen":
+            out.append((cls, name, mat, v, tri))
+            continue
+        t = v[tri]
+        n = np.cross(t[:, 1] - t[:, 0], t[:, 2] - t[:, 0])
+        n /= np.linalg.norm(n, axis=1, keepdims=True) + 1e-12
+        drop = np.zeros(len(tri), bool)
+        for ax, lo, hi in rects:
+            o = [i for i in range(3) if i != ax]
+            flat = np.abs(n[:, ax]) > 0.999
+            c = t[:, :, ax].mean(1)
+            near = (c > lo[ax] - gap) & (c < hi[ax] + gap)
+            ins = np.ones(len(tri), bool)
+            for i in o:
+                ins &= (t[:, :, i].min(1) >= lo[i] - tol) & (t[:, :, i].max(1) <= hi[i] + tol)
+            drop |= flat & near & ins
+        # треугольник может лежать под несколькими дверями сразу — проверяем по вершинам
+        for k in np.where(~drop & (np.abs(n).max(1) > 0.999))[0]:
+            ax = int(np.argmax(np.abs(n[k])))
+            ok = True
+            for pt in t[k]:
+                if not any(r[0] == ax and r[1][ax] - gap < pt[ax] < r[2][ax] + gap
+                           and all(r[1][i] - tol <= pt[i] <= r[2][i] + tol for i in range(3) if i != ax) for r in rects):
+                    ok = False
+                    break
+            # все вершины под дверями и центр тоже
+            if ok:
+                cpt = t[k].mean(0)
+                ok = any(r[0] == ax and all(r[1][i] - tol <= cpt[i] <= r[2][i] + tol for i in range(3) if i != ax) for r in rects)
+            drop[k] = ok
+        removed += int(drop.sum())
+        out.append((cls, name, mat, v, tri[~drop]))
+    return [p for p in out if len(p[4])], removed
+
+
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -378,6 +510,27 @@ def main():
         print(f"flat (IFC): файл не найден — {ifc_path}; макет не обновлён")
         return
     parts = tessellate(ifc_path)
+    # Телевизор в спальне в Revit стоит задом наперёд: плоский экран смотрит в стену,
+    # в комнату — скруглённая задняя крышка. Отражаем по толщине (ось x)
+    for i, (cls, name, mat, v, tri) in enumerate(parts):
+        if TV_FLIP in name.lower():
+            v = v.copy()
+            u = v[np.unique(tri)]
+            v[:, 0] = u[:, 0].min() + u[:, 0].max() - v[:, 0]
+            parts[i] = (cls, name, mat, v, tri[:, ::-1])
+    # Стулья — гладкие (просьба заказчика): свой материал со сглаженными
+    # нормалями и мелкая сетка склейки, чтобы тонкие сиденья не слипались
+    parts = [
+        ("Chair", name, "chair", v, tri) if mat in ("wood", "fabric") and any(k in name.lower() for k in CHAIRS)
+        else (cls, name, mat, v, tri)
+        for cls, name, mat, v, tri in parts
+    ]
+    parts, hidden = hide_behind_facades(parts)
+    print(f"flat (IFC): граней корпусов за дверями убрано {hidden}")
+    # Совпадающие грани разных элементов мерцали друг сквозь друга
+    tris, n_co = ifc.remove_coincident([(m, v, t) for _, _, m, v, t in parts], skip=("glass",))
+    parts = [(c, nm, m, v, t) for (c, nm, m, v, _), t in zip(parts, tris) if len(t)]
+    print(f"flat (IFC): совпадающих граней убрано {n_co}")
 
     # ── Совмещение: срез существующих стен на SCAN_Y ──
     cut = lambda t: (t[:, :, 2].min(1) <= FLOOR0 + SCAN_Y) & (t[:, :, 2].max(1) >= FLOOR0 + SCAN_Y)
@@ -426,6 +579,35 @@ def main():
         )
         parts = [p for p in parts if not is_entrance(p)]
         parts += [("Door", "entrance", mat, v, t) for mat, v, t in entrance_door(lo[0], hi[0], lo[1], y_in, hi[2])]
+
+    # Унитаз: вместо оболочки из IFC — нарисованный, в тех же габаритах
+    bowl = [p for p in parts if TOILET in p[1].lower()]
+    if bowl:
+        lo = np.min([v[t].reshape(-1, 3).min(0) for *_, v, t in bowl], axis=0)
+        hi = np.max([v[t].reshape(-1, 3).max(0) for *_, v, t in bowl], axis=0)
+        parts = [p for p in parts if TOILET not in p[1].lower()]
+        parts += [("Door", "toilet", mat, v, t) for mat, v, t in toilet(lo[0], hi[0], lo[1], hi[1], hi[2])]
+    # Подушки: две у изголовья (изголовье — сторона кровати с деталями выше матраса)
+    bed = [p for p in parts if BED in p[1].lower()]
+    if bed:
+        pv = np.concatenate([v[np.unique(t)] for *_, v, t in bed])
+        lo, hi = pv.min(0), pv.max(0)
+        mat_top = max(v[np.unique(t)][:, 2].max() for _, _, m, v, t in bed if m == "fabric")
+        high = pv[pv[:, 2] > mat_top + 0.1]
+        ax = int(np.argmin(high.max(0)[:2] - high.min(0)[:2]))  # изголовье тонкое по этой оси
+        head_lo = abs(high[:, ax].mean() - lo[ax]) < abs(high[:, ax].mean() - hi[ax])
+        other = 1 - ax
+        span = hi[other] - lo[other] - 0.16
+        hw = span / 4 - 0.02  # полуширина подушки
+        depth = 0.22
+        c_ax = (high[:, ax].max() + 0.04 + depth) if head_lo else (high[:, ax].min() - 0.04 - depth)
+        for q in (1, 3):
+            c_o = lo[other] + 0.08 + span * q / 4
+            c = [0, 0]
+            c[ax], c[other] = c_ax, c_o
+            h = [0, 0]
+            h[ax], h[other] = depth, hw
+            parts.append(("Door", "pillow", "white", *pillow(c[0], c[1], h[0], h[1], 0.07, mat_top - 0.01)))
 
     # ── Корзины ──
     buckets = {}

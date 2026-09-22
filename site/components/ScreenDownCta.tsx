@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import styles from "./Cta.module.css";
 
 /**
@@ -10,8 +11,18 @@ import styles from "./Cta.module.css";
  * Сам переход — ScreenPager (перехватывает ссылки-якоря на экраны).
  * Кнопка стоит вне экранов: position: fixed внутри секции ломается от их анимаций.
  */
-export default function ScreenDownCta({ label, delay = "1.2s" }: { label: string; delay?: string }) {
+export default function ScreenDownCta({
+  label,
+  delay = "1.2s",
+  upCta = false,
+}: {
+  label: string;
+  delay?: string;
+  /** На последнем экране — кнопка «на главную» (только у последнего проекта) */
+  upCta?: boolean;
+}) {
   const [target, setTarget] = useState<string | null>(null);
+  const [last, setLast] = useState(false);
 
   useEffect(() => {
     const screens = Array.from(document.querySelectorAll<HTMLElement>("main [data-screen]")).filter(
@@ -23,6 +34,7 @@ export default function ScreenDownCta({ label, delay = "1.2s" }: { label: string
         if (!cur) return;
         const next = screens[screens.indexOf(cur as HTMLElement) + 1];
         setTarget(next?.id || null);
+        setLast(!next);
       },
       // Текущий экран — тот, что пересекает середину окна
       { rootMargin: "-50% 0px -50% 0px" },
@@ -33,6 +45,7 @@ export default function ScreenDownCta({ label, delay = "1.2s" }: { label: string
 
   const shown = target !== null;
   return (
+    <>
     <a
       href={target ? `#${target}` : "#"}
       className={styles.cta}
@@ -55,5 +68,35 @@ export default function ScreenDownCta({ label, delay = "1.2s" }: { label: string
         </svg>
       </span>
     </a>
+    {/* На последнем экране вместо стрелки — на главную, как «← Портфолио», но сначала
+        страница поднимается к макету (data-scroll-top, см. ProjectModel); только у
+        последнего проекта (просьба заказчика) */}
+    {upCta && (
+    <Link
+      href="/#projects"
+      transitionTypes={["proj-close"]}
+      data-nav="proj-close"
+      data-scroll-top=""
+      className={styles.cta}
+      data-hidden={last ? undefined : ""}
+      aria-label="На главную"
+      aria-hidden={last ? undefined : true}
+      tabIndex={last ? undefined : -1}
+    >
+      <span className={styles.ctaBody}>
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path
+            d="M4 11l8-7 8 7M6 9.5V20h4.5v-6h3v6H18V9.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </span>
+    </Link>
+    )}
+    </>
   );
 }

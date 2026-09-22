@@ -329,3 +329,8 @@
   text-align: center;
   white-space: nowrap;
 }
+
+/* Обёртка планшета — отдельный шаг каскада перехода к соседнему проекту */
+.posterWrap:empty {
+  display: none;
+}

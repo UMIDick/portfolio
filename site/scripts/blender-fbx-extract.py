@@ -9,6 +9,7 @@ blender -b --python scripts/blender-fbx-extract.py -- <file.fbx> <out.npz> <пр
 
 import sys
 
+import bmesh
 import bpy
 import numpy as np
 
@@ -22,6 +23,16 @@ for o in bpy.context.scene.objects:
     if o.type != "MESH" or not o.name.startswith(prefix):
         continue
     me = o.data
+    # Импорт мелко нарезан (сотни тысяч треугольников на плоских скатах). Сливаем
+    # плоские грани здесь, без искажения формы: склейка сеткой в make-tower-ifc.py
+    # сдвигала вершины тонких листов, и скаты ломались
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-4)
+    bmesh.ops.dissolve_limit(bm, angle_limit=0.0087, verts=bm.verts, edges=bm.edges)
+    bmesh.ops.triangulate(bm, faces=bm.faces)
+    bm.to_mesh(me)
+    bm.free()
     me.calc_loop_triangles()
     n = len(me.vertices)
     co = np.empty(n * 3)
