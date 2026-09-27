@@ -122,7 +122,12 @@ export default async function ProjectPage({ params }: PageProps<"/projects/[slug
             <section className={styles.sheetsSection} aria-label="Листы проекта" data-sheets-panel data-cascade-item style={{ ["--ci" as string]: 3 }}>
               {!project.underConstruction && (
                 <p className={`${styles.sheetsHint} rise`}>
-                  (крутите колесо над лентой, чтобы листать; нажмите на лист, чтобы открыть его во весь экран)
+                  <span className={styles.hintMouse}>
+                    (крутите колесо над лентой, чтобы листать; нажмите на лист, чтобы открыть его во весь экран)
+                  </span>
+                  <span className={styles.hintTouch}>
+                    (листайте ленту пальцем; нажмите на лист, чтобы открыть его во весь экран)
+                  </span>
                 </p>
               )}
               {count > 0 ? (

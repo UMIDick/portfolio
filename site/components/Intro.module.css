@@ -6,7 +6,12 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  --u: max(30px, min(calc((100vw - 48px) / 12.2), calc((100vh - 120px) / 13.2)));
+  /* Нижний предел 30px не даёт плиткам мельчать на десктопе, но на узких
+     и низких экранах (телефоны) сам ужимается, чтобы доска помещалась целиком. */
+  --u: max(
+    min(30px, calc((100vw - 24px) / 12.2), calc((100svh - 36px) / 13.2)),
+    min(calc((100vw - 48px) / 12.2), calc((100vh - 120px) / 13.2))
+  );
 }
 
 .board {

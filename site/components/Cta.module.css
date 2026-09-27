@@ -130,14 +130,11 @@
   animation: cta-in 0.7s var(--ease-out) backwards;
 }
 
-@media (max-width: 600px) {
+/* На телефонах постраничной прокрутки нет (ScreenPager отключён на узких окнах),
+   а плавающая кнопка наезжала на текст у нижнего края — прячем её. */
+@media (max-width: 760px) {
   .cta {
-    right: 24px;
-    bottom: 20px;
-  }
-  .ctaBody {
-    width: 48px;
-    height: 48px;
+    display: none;
   }
 }
 

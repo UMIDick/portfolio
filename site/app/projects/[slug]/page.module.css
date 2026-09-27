@@ -86,6 +86,12 @@
     grid-template-columns: 1fr;
     gap: 32px;
   }
+  /* Карточка с макетом меньше и по центру: на всю ширину зданию (особенно башне)
+     не хватало места сверху — оно вылезало за экран и наезжало на шапку. */
+  .coverStage {
+    width: min(62vw, 38svh, 300px);
+    margin-inline: auto;
+  }
 }
 
 /* Ячейка иконки: сама иконка и 3D-макет поверх неё */
@@ -209,6 +215,19 @@
   text-align: center;
   font-size: 16px;
   color: var(--color-neutral-500);
+}
+
+/* На сенсорных экранах подсказка про колесо мыши заменяется на «пальцем» */
+.hintTouch {
+  display: none;
+}
+@media (hover: none) and (pointer: coarse) {
+  .hintMouse {
+    display: none;
+  }
+  .hintTouch {
+    display: inline;
+  }
 }
 
 /* Второй экран: одинаковый отступ --g сверху, снизу и между планшетом и блоками.

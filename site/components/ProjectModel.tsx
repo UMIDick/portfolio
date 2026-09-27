@@ -584,6 +584,11 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
         let down: { x: number; y: number; t: number; auto: boolean } | null = null;
         const onDown = (e: PointerEvent) => {
           if (e.button !== 0) return;
+          // Второй палец (щипок) — это не нажатие
+          if (down) {
+            down = null;
+            return;
+          }
           down = { x: e.clientX, y: e.clientY, t: performance.now(), auto: controls?.autoRotate ?? false };
         };
         const onUp = (e: PointerEvent) => {
@@ -645,12 +650,8 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
         fullHost.dataset.panning = "";
         markInteract();
       };
-      const onPanMove = (e: PointerEvent) => {
-        if (!panFrom || e.pointerId !== panFrom.id) return;
-        const dx = e.clientX - panFrom.x;
-        const dy = e.clientY - panFrom.y;
-        panFrom.x = e.clientX;
-        panFrom.y = e.clientY;
+      // Сдвиг точки вращения на dx/dy пикселей экрана — общий для мыши и двух пальцев
+      const panBy = (dx: number, dy: number) => {
         // Пиксель экрана → единицы сцены на расстоянии точки вращения
         const k = (2 * fromPivot().length() * tanHalf) / ch;
         camera.updateMatrixWorld();
@@ -665,6 +666,14 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
         );
         dirty = true;
         markInteract();
+      };
+      const onPanMove = (e: PointerEvent) => {
+        if (!panFrom || e.pointerId !== panFrom.id) return;
+        const dx = e.clientX - panFrom.x;
+        const dy = e.clientY - panFrom.y;
+        panFrom.x = e.clientX;
+        panFrom.y = e.clientY;
+        panBy(dx, dy);
       };
       const onPanUp = (e: PointerEvent) => {
         if (!panFrom || e.pointerId !== panFrom.id) return;
@@ -682,6 +691,50 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
       fullHost.addEventListener("pointercancel", onPanUp);
       fullHost.addEventListener("mousedown", onMiddleMouse);
       fullHost.addEventListener("auxclick", onMiddleMouse);
+
+      // Два пальца на сенсорном экране — как мышь на ПК: щипок приближает (колесо),
+      // движение обоих пальцев вместе перемещает (панорама с зажатым колесиком).
+      // OrbitControls двумя пальцами сам ничего не делает: dolly и pan у него выключены.
+      const touches = new Map<number, { x: number; y: number }>();
+      let pinchDist = 0;
+      let pinchMid = { x: 0, y: 0 };
+      const onPinchDown = (e: PointerEvent) => {
+        if (e.pointerType !== "touch") return;
+        touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (touches.size === 2) {
+          const [a, b] = [...touches.values()];
+          pinchDist = Math.hypot(a.x - b.x, a.y - b.y);
+          pinchMid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+          if (controls) controls.autoRotate = false;
+          markInteract();
+        }
+      };
+      const onPinchMove = (e: PointerEvent) => {
+        const t = touches.get(e.pointerId);
+        if (!t) return;
+        t.x = e.clientX;
+        t.y = e.clientY;
+        if (touches.size !== 2 || !zoomOn || morph) return;
+        const [a, b] = [...touches.values()];
+        const d = Math.hypot(a.x - b.x, a.y - b.y);
+        const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+        if (pinchDist > 0 && d > 0) {
+          zoomTo = Math.min(ZOOM_OUT, Math.max(ZOOM_IN, zoomTo * (pinchDist / d)));
+          dirty = true;
+          markInteract();
+        }
+        panBy(mid.x - pinchMid.x, mid.y - pinchMid.y);
+        pinchDist = d;
+        pinchMid = mid;
+      };
+      const onPinchUp = (e: PointerEvent) => {
+        touches.delete(e.pointerId);
+        pinchDist = 0;
+      };
+      fullHost.addEventListener("pointerdown", onPinchDown);
+      fullHost.addEventListener("pointermove", onPinchMove);
+      fullHost.addEventListener("pointerup", onPinchUp);
+      fullHost.addEventListener("pointercancel", onPinchUp);
 
       layout();
       placeCamera(camera, topPose);
@@ -1008,6 +1061,10 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
         fullHost.removeEventListener("pointercancel", onPanUp);
         fullHost.removeEventListener("mousedown", onMiddleMouse);
         fullHost.removeEventListener("auxclick", onMiddleMouse);
+        fullHost.removeEventListener("pointerdown", onPinchDown);
+        fullHost.removeEventListener("pointermove", onPinchMove);
+        fullHost.removeEventListener("pointerup", onPinchUp);
+        fullHost.removeEventListener("pointercancel", onPinchUp);
         closeBtn.removeEventListener("click", onCloseBtn);
         if (dialog.open) dialog.close();
         delete dialog.dataset.open;
