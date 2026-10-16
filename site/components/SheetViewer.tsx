@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { warmSheet } from "@/lib/sheet-image";
 import styles from "./SheetViewer.module.css";
 
 export interface ViewerItem {
@@ -40,20 +41,6 @@ const OPEN_EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 const CLOSE_EASE = "cubic-bezier(0.32, 0.72, 0, 1)";
 /** Доля перелёта при закрытии, за которую миниатюра проявляется под летящим листом. */
 const LAND_REVEAL = 0.5;
-
-/**
- * Полный размер листа — заранее, по наведению на миниатюру: к нажатию файл уже
- * в кэше, и декодирование (вне главного потока) успевает до конца перелёта.
- */
-const warmed = new Set<string>();
-export function warmSheet(src: string) {
-  if (warmed.has(src)) return;
-  warmed.add(src);
-  const img = new window.Image();
-  img.decoding = "async";
-  img.src = src;
-  img.decode().catch(() => warmed.delete(src));
-}
 
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 

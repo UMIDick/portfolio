@@ -19,6 +19,11 @@ export const out = (name) => path.join(OUT_DIR, name);
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 export const W = 1600;
 export const H = 1000;
+// MOBILE=1 — эмуляция телефона (метрики устройства, тач, DPR 3, замедление CPU по умолчанию 4×);
+// координаты ввода и rect() — в CSS-пикселях эмулированного окна MW×MH
+export const MOBILE = !!process.env.MOBILE;
+export const MW = Number(process.env.MW ?? 390);
+export const MH = Number(process.env.MH ?? 844);
 const COLLECTOR = `
   window.__prof = { loaf: [], gaps: [], marks: [], events: [] };
   window.__mark = (name) => window.__prof.marks.push({ name, t: performance.now() });
@@ -55,7 +60,7 @@ const COLLECTOR = `
   setTimeout(loop, 4);
 `;
 
-export async function launch({ port = 9333, cpu = Number(process.env.CPU ?? 1) } = {}) {
+export async function launch({ port = 9333, cpu = Number(process.env.CPU ?? (MOBILE ? 4 : 1)) } = {}) {
   const dir = path.join(OUT_DIR, "chrome-profile");
   if (process.env.COLD) rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
@@ -117,6 +122,21 @@ export async function launch({ port = 9333, cpu = Number(process.env.CPU ?? 1) }
   await send("Runtime.enable");
   await send("Page.addScriptToEvaluateOnNewDocument", { source: COLLECTOR });
   if (cpu > 1) await send("Emulation.setCPUThrottlingRate", { rate: cpu });
+  if (MOBILE) {
+    await send("Emulation.setDeviceMetricsOverride", {
+      width: MW,
+      height: MH,
+      deviceScaleFactor: Number(process.env.DPR ?? 3),
+      mobile: true,
+      screenOrientation: { type: "portraitPrimary", angle: 0 },
+    });
+    await send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 5 });
+    await send("Emulation.setUserAgentOverride", {
+      userAgent:
+        "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36",
+      platform: "Android",
+    });
+  }
 
   const rect = (sel) =>
     evaluate(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return null;
@@ -144,6 +164,51 @@ export async function launch({ port = 9333, cpu = Number(process.env.CPU ?? 1) }
     const r = await rect(sel);
     if (!r) throw new Error("нет элемента " + sel);
     await click(r.x, r.y);
+  };
+
+  // ── Тач-жесты (эмуляция телефона): настоящие последовательности касаний ──
+  const touchSend = (type, touchPoints) => send("Input.dispatchTouchEvent", { type, touchPoints });
+  /** Короткое касание (нажатие пальцем). */
+  const tap = async (x, y) => {
+    await touchSend("touchStart", [{ x, y, id: 1 }]);
+    await sleep(60);
+    await touchSend("touchEnd", []);
+  };
+  /** Прокрутка/свайп пальцем: без инерции (движение и отпускание после паузы). */
+  const swipe = async (x, y, dx, dy, { steps = 14, stepMs = 16, fling = false } = {}) => {
+    await touchSend("touchStart", [{ x, y, id: 1 }]);
+    for (let i = 1; i <= steps; i++) {
+      await touchSend("touchMove", [{ x: x + (dx * i) / steps, y: y + (dy * i) / steps, id: 1 }]);
+      await sleep(stepMs);
+    }
+    if (!fling) await sleep(120);
+    await touchSend("touchEnd", []);
+  };
+  /** Щипок двумя пальцами: расстояние между пальцами от d0 к d1 вокруг (cx, cy). */
+  const pinch = async (cx, cy, d0, d1, { steps = 14, stepMs = 16 } = {}) => {
+    const pts = (d) => [
+      { x: cx - d / 2, y: cy, id: 1 },
+      { x: cx + d / 2, y: cy, id: 2 },
+    ];
+    await touchSend("touchStart", pts(d0));
+    for (let i = 1; i <= steps; i++) await (await touchSend("touchMove", pts(d0 + ((d1 - d0) * i) / steps)), sleep(stepMs));
+    await touchSend("touchEnd", []);
+  };
+  /** Панорама двумя пальцами: оба пальца едут вместе на (dx, dy). */
+  const twoFingerPan = async (cx, cy, dist, dx, dy, { steps = 14, stepMs = 16 } = {}) => {
+    const pts = (t) => [
+      { x: cx - dist / 2 + dx * t, y: cy + dy * t, id: 1 },
+      { x: cx + dist / 2 + dx * t, y: cy + dy * t, id: 2 },
+    ];
+    await touchSend("touchStart", pts(0));
+    for (let i = 1; i <= steps; i++) await (await touchSend("touchMove", pts(i / steps)), sleep(stepMs));
+    await touchSend("touchEnd", []);
+  };
+  /** Нажать элемент пальцем. */
+  const tapSel = async (sel) => {
+    const r = await rect(sel);
+    if (!r) throw new Error("нет элемента " + sel);
+    await tap(r.x, r.y);
   };
   const mark = (name) => {
     console.log("→", name);
@@ -195,6 +260,11 @@ export async function launch({ port = 9333, cpu = Number(process.env.CPU ?? 1) }
     wheel,
     key,
     clickSel,
+    tap,
+    tapSel,
+    swipe,
+    pinch,
+    twoFingerPan,
     mark,
     traceStart,
     traceStop,

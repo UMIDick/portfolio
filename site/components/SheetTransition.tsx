@@ -1,4 +1,5 @@
 import { ViewTransition, type ReactNode } from "react";
+import RevealScreens from "./RevealScreens";
 
 /**
  * Переходы между страницами (View Transitions, «чертёжный лист»).
@@ -43,6 +44,8 @@ export function PageSheet({ kind, children }: { kind: keyof typeof MAPS; childre
   return (
     <ViewTransition enter={m.enter} exit={m.exit} default="none">
       {children}
+      {/* Телефоны: скрытые content-visibility экраны раскладываются заранее в простое */}
+      <RevealScreens />
     </ViewTransition>
   );
 }

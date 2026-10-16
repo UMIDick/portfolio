@@ -1,8 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useCallback, useMemo, useRef, useState } from "react";
-import SheetViewer from "./SheetViewer";
+
+/* Тот же отдельный чанк просмотра, что у SheetGallery: к первому нажатию по обложке
+   он обычно уже загружен лентой листов, а исполнение не попадает в переход. */
+const SheetViewer = dynamic(() => import("./SheetViewer"), { ssr: false });
 
 interface Props {
   cover: { src: string; width: number; height: number };
@@ -16,6 +20,8 @@ interface Props {
  */
 export default function ProjectCover({ cover, projectTitle, className }: Props) {
   const [open, setOpen] = useState(false);
+  // Просмотр монтируется при первом открытии и дальше остаётся (анимации закрытия)
+  const [everOpened, setEverOpened] = useState(false);
   const ref = useRef<HTMLButtonElement>(null);
   const items = useMemo(
     () => [{ key: "cover", ...cover, title: "Обложка проекта", alt: `${projectTitle} — обложка проекта` }],
@@ -30,7 +36,10 @@ export default function ProjectCover({ cover, projectTitle, className }: Props) 
         ref={ref}
         type="button"
         className={className}
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setEverOpened(true);
+          setOpen(true);
+        }}
         aria-label={`Обложка проекта «${projectTitle}» — открыть в полном размере`}
       >
         <Image
@@ -41,14 +50,16 @@ export default function ProjectCover({ cover, projectTitle, className }: Props) 
           sizes="(max-width: 1240px) 100vw, 1100px"
         />
       </button>
-      <SheetViewer
-        items={items}
-        index={open ? 0 : null}
-        onIndexChange={() => {}}
-        onClose={close}
-        projectTitle={projectTitle}
-        origin={origin}
-      />
+      {everOpened && (
+        <SheetViewer
+          items={items}
+          index={open ? 0 : null}
+          onIndexChange={() => {}}
+          onClose={close}
+          projectTitle={projectTitle}
+          origin={origin}
+        />
+      )}
     </>
   );
 }

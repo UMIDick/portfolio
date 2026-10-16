@@ -1,12 +1,18 @@
 "use client";
 
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isRecentArrival } from "@/lib/arrival";
-import { CAROUSEL_SIZES, EAGER_SLIDES, GRID_SIZES, isUnoptimized } from "@/lib/sheet-image";
+import { idlePause, markBusy } from "@/lib/idle";
+import { CAROUSEL_SIZES, EAGER_SLIDES, GRID_SIZES, isUnoptimized, warmSheet } from "@/lib/sheet-image";
 import type { Sheet } from "@/lib/types";
-import SheetViewer, { warmSheet } from "./SheetViewer";
 import styles from "./SheetGallery.module.css";
+
+/* Код полноэкранного просмотра — отдельным чанком: исполнение скриптов страницы
+   в момент перехода — заметная часть фриза открытия проекта (на телефоне особенно).
+   Просмотр монтируется в простое после перехода или при первом открытии листа. */
+const SheetViewer = dynamic(() => import("./SheetViewer"), { ssr: false });
 
 interface Props {
   sheets: Sheet[];
@@ -56,6 +62,29 @@ export default function SheetGallery({ sheets, projectTitle, layout = "grid", lo
   const open = useCallback((i: number) => setIndex(i), []);
   const close = useCallback(() => setIndex(null), []);
   const origin = useCallback((i: number) => thumbs.current[i] ?? null, []);
+
+  // Просмотр листа монтируем в простое (или сразу при первом открытии):
+  // его модуль и рендер не должны попадать в переход на страницу
+  const [viewerReady, setViewerReady] = useState(false);
+  useEffect(() => {
+    let on = true;
+    void idlePause({ quiet: true }).then(() => {
+      if (on) setViewerReady(true);
+    });
+    return () => {
+      on = false;
+    };
+  }, []);
+
+  // Пока листы въезжают после перехода, главный поток занят (markBusy): на сенсорных
+  // устройствах процессор слабый, и срочные шаги сборки 3D-макета (по 100–250 мс)
+  // рвали въезд листов. На десктопе шаги по 20–50 мс — макет не ждём.
+  useEffect(() => {
+    if (!carousel || slidesDelay !== "1.1s") return;
+    if (!window.matchMedia("(hover: none) and (pointer: coarse)").matches) return;
+    // Последний лист: задержка 1.1 с + 6 шагов по 90 мс + анимация 0.9 с
+    markBusy(performance.now() + 2700);
+  }, [carousel, slidesDelay]);
 
   // Открытие по ссылке вида #sheet-12
   useEffect(() => {
@@ -231,14 +260,16 @@ export default function SheetGallery({ sheets, projectTitle, layout = "grid", lo
 
       </div>
 
-      <SheetViewer
-        items={items}
-        index={index}
-        onIndexChange={setIndex}
-        onClose={close}
-        projectTitle={projectTitle}
-        origin={origin}
-      />
+      {(viewerReady || index !== null) && (
+        <SheetViewer
+          items={items}
+          index={index}
+          onIndexChange={setIndex}
+          onClose={close}
+          projectTitle={projectTitle}
+          origin={origin}
+        />
+      )}
     </>
   );
 }

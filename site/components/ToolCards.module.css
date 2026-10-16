@@ -310,6 +310,21 @@
   background: var(--brand);
 }
 
+/* Сенсорные экраны: раскрытие быстрее и без выжидания чужой карточки — каждый кадр
+   смены высоты пере-раскладывает страницу, на слабом процессоре долгий переход
+   выглядел чередой рывков; короткий дёрнуться почти не успевает. */
+@media (hover: none) and (pointer: coarse) {
+  .more,
+  .grid:has(.card[data-open]) .card:not([data-open]) .more {
+    transition: grid-template-rows 0.22s var(--ease-out);
+  }
+  .card[data-open] .panel {
+    transition:
+      opacity 0.25s ease,
+      transform 0.28s var(--ease-out);
+  }
+}
+
 @media (max-width: 900px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);

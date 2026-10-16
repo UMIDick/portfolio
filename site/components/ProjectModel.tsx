@@ -202,7 +202,10 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
         while (isBusy() && !disposed) await new Promise((r) => setTimeout(r, 50));
         if (disposed) return;
       }
-      const model = await mod.prepareModel(src, { urgent: true });
+      // На сенсорных устройствах сборка не «срочная»: срочные шаги (по 100–350 мс
+      // на слабом процессоре) шли подряд и дёргали прокрутку и ленту листов —
+      // в простое сборка чуть дольше, зато под пальцем ничего не замирает
+      const model = await mod.prepareModel(src, { urgent: finePointer });
       if (disposed) return;
       // Сборка могла занять время — анимация начинается с начала, а не с середины
       startAt = Math.max(startAt, performance.now() + 30);
@@ -486,8 +489,18 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
       };
 
       let openedByKey = false;
+      /** Нажатие, пока здание «печатается»: молчать нельзя — на сенсорных экранах
+          сборка долгая, мёртвое нажатие выглядело зависанием, посетитель нажимал
+          ещё раз и получал браузерный дабл-тап-зум. Запоминаем и открываем на весь
+          экран, как только достроится (если нажатие свежее — см. finishIntro). */
+      let pendingOpen = 0;
       const openFull = (byKey = false) => {
-        if (phase !== "idle" || isFull() || closing || dialog.open) return;
+        if (isFull() || closing || dialog.open) return;
+        if (phase === "intro") {
+          pendingOpen = performance.now();
+          return;
+        }
+        if (phase !== "idle") return;
         openedByKey = byKey;
         // Размер на экране ∝ высота холста / расстояние: пересчитываем расстояние
         // под новый холст, чтобы в первый кадр карточка осталась той же
@@ -752,6 +765,13 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
       const preloadNeighbours = () => {
         const next = preloadRef.current;
         if (!wantNeighbours || !next?.length) return;
+        // Пока макет открыт на весь экран, соседей не готовим: даже «мягкие» шаги
+        // (загрузка и разбор GLB) на слабом процессоре задевали вращение и щипок
+        if (isFull()) {
+          clearTimeout(preloadTimer);
+          preloadTimer = window.setTimeout(preloadNeighbours, 1500);
+          return;
+        }
         wantNeighbours = false;
         clearTimeout(preloadTimer);
         document.removeEventListener("pointerover", onNeighbourIntent);
@@ -790,6 +810,12 @@ export default function ProjectModel({ slug, icon, ink, bg, preload }: Props) {
         if (reduced) setCenter(1);
         if (finePointer) controls = makeControls(hit);
         setInteractive(true);
+        // Нажатие во время сборки — отвечаем сразу после неё; несвежее забываем
+        if (pendingOpen) {
+          const recent = performance.now() - pendingOpen < 4000;
+          pendingOpen = 0;
+          if (recent) openFull();
+        }
         // Соседние проекты — в фоне, чтобы переход к ним тоже был плавным: сразу, если макет
         // ушёл из окна (второй экран, где ссылки на соседей) или навели на ссылку соседа,
         // иначе через NEIGHBOURS_AFTER. Не ждём дольше: неготовый макет при переходе
